@@ -1,11 +1,11 @@
 package route
 
 import (
-	domainauth "backend-challenge-golang-7solution/internal/domain/auth"
-	domainuser "backend-challenge-golang-7solution/internal/domain/user"
-	"backend-challenge-golang-7solution/internal/http/handler"
-	"backend-challenge-golang-7solution/internal/middleware"
-	jwtpkg "backend-challenge-golang-7solution/pkg/jwt"
+	domainauth "github.com/twrnakata/user-auth-api/internal/domain/auth"
+	domainuser "github.com/twrnakata/user-auth-api/internal/domain/user"
+	"github.com/twrnakata/user-auth-api/internal/http/handler"
+	"github.com/twrnakata/user-auth-api/internal/middleware"
+	jwtpkg "github.com/twrnakata/user-auth-api/pkg/jwt"
 
 	"github.com/gofiber/fiber/v2"
 )

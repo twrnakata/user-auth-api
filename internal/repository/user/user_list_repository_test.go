@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"go.mongodb.org/mongo-driver/v2/bson"
 
-	domainuser "backend-challenge-golang-7solution/internal/domain/user"
-	repositorymodel "backend-challenge-golang-7solution/internal/repository/user/model"
+	domainuser "github.com/twrnakata/user-auth-api/internal/domain/user"
+	repositorymodel "github.com/twrnakata/user-auth-api/internal/repository/user/model"
 )
 
 type fakeUserDocumentsFinder struct {

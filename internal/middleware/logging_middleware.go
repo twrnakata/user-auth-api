@@ -10,7 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 
-	"backend-challenge-golang-7solution/pkg/datetime"
+	"github.com/twrnakata/user-auth-api/pkg/datetime"
 )
 
 const (

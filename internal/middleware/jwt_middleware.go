@@ -5,8 +5,9 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
-	"backend-challenge-golang-7solution/pkg/caller"
-	jwtpkg "backend-challenge-golang-7solution/pkg/jwt"
+	"github.com/twrnakata/user-auth-api/pkg/apperror"
+	"github.com/twrnakata/user-auth-api/pkg/caller"
+	jwtpkg "github.com/twrnakata/user-auth-api/pkg/jwt"
 )
 
 const (
@@ -18,25 +19,25 @@ const (
 func JWT(jwtService *jwtpkg.JWTService) fiber.Handler {
 	return func(fiberContext *fiber.Ctx) error {
 		if jwtService == nil {
-			return caller.InternalServerError(fiberContext, "jwt service not initialized")
+			return caller.InternalError(fiberContext, apperror.ErrJWTServiceNotInitialized)
 		}
 
 		authorizationHeader := strings.TrimSpace(fiberContext.Get("Authorization"))
 		if authorizationHeader == "" {
-			return caller.Unauthorized(fiberContext, "missing authorization header")
+			return caller.Unauthorized(fiberContext, apperror.ErrMissingAuthorizationHeader.Error())
 		}
 		if !strings.HasPrefix(authorizationHeader, bearerPrefix) {
-			return caller.Unauthorized(fiberContext, "invalid authorization header format")
+			return caller.Unauthorized(fiberContext, apperror.ErrInvalidAuthorizationHeaderFormat.Error())
 		}
 
 		tokenString := strings.TrimSpace(strings.TrimPrefix(authorizationHeader, bearerPrefix))
 		if tokenString == "" {
-			return caller.Unauthorized(fiberContext, "missing bearer token")
+			return caller.Unauthorized(fiberContext, apperror.ErrMissingBearerToken.Error())
 		}
 
 		claims, err := jwtService.ParseToken(tokenString)
 		if err != nil {
-			return caller.Unauthorized(fiberContext, "invalid or expired token")
+			return caller.Unauthorized(fiberContext, apperror.ErrInvalidOrExpiredToken.Error())
 		}
 
 		fiberContext.Locals(LocalKeyUserID, claims.UserID)

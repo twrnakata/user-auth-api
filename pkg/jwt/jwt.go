@@ -1,14 +1,14 @@
 package jwt
 
 import (
-	"errors"
 	"os"
 	"strings"
 	"time"
 
 	jwtlib "github.com/golang-jwt/jwt/v5"
 
-	"backend-challenge-golang-7solution/pkg/datetime"
+	"github.com/twrnakata/user-auth-api/pkg/apperror"
+	"github.com/twrnakata/user-auth-api/pkg/datetime"
 )
 
 const (
@@ -16,8 +16,6 @@ const (
 	FallbackSecret        = "local-dev-jwt-secret"
 	DefaultExpireDuration = 7 * 24 * time.Hour
 )
-
-var ErrSecretKeyRequired = errors.New("jwt secret key is required")
 
 type Claims struct {
 	UserID string `json:"userId"`
@@ -41,7 +39,7 @@ func SecretFromEnvironment() string {
 func NewJWTService(secretKey string, expireDuration time.Duration) (*JWTService, error) {
 	secretKey = strings.TrimSpace(secretKey)
 	if secretKey == "" {
-		return nil, ErrSecretKeyRequired
+		return nil, apperror.ErrJWTSecretKeyRequired
 	}
 	if expireDuration <= 0 {
 		expireDuration = DefaultExpireDuration
@@ -74,7 +72,7 @@ func (service *JWTService) ParseToken(tokenString string) (*Claims, error) {
 	claims := &Claims{}
 	token, err := jwtlib.ParseWithClaims(tokenString, claims, func(token *jwtlib.Token) (any, error) {
 		if _, ok := token.Method.(*jwtlib.SigningMethodHMAC); !ok {
-			return nil, errors.New("unexpected signing method")
+			return nil, apperror.ErrUnexpectedSigningMethod
 		}
 		return service.secretKey, nil
 	})
@@ -82,7 +80,7 @@ func (service *JWTService) ParseToken(tokenString string) (*Claims, error) {
 		return nil, err
 	}
 	if !token.Valid {
-		return nil, errors.New("invalid token")
+		return nil, apperror.ErrInvalidToken
 	}
 	return claims, nil
 }

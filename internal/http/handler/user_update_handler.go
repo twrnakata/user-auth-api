@@ -5,12 +5,13 @@ import (
 	"errors"
 	"strings"
 
-	handlermodel "backend-challenge-golang-7solution/internal/http/handler/model"
+	handlermodel "github.com/twrnakata/user-auth-api/internal/http/handler/model"
 	"github.com/gofiber/fiber/v2"
 
-	domainuser "backend-challenge-golang-7solution/internal/domain/user"
-	"backend-challenge-golang-7solution/pkg/caller"
-	"backend-challenge-golang-7solution/pkg/datetime"
+	domainuser "github.com/twrnakata/user-auth-api/internal/domain/user"
+	"github.com/twrnakata/user-auth-api/pkg/apperror"
+	"github.com/twrnakata/user-auth-api/pkg/caller"
+	"github.com/twrnakata/user-auth-api/pkg/datetime"
 )
 
 type UserUpdateHandler struct {
@@ -19,7 +20,7 @@ type UserUpdateHandler struct {
 
 func (handler *UserUpdateHandler) Update(fiberContext *fiber.Ctx) error {
 	if handler.UpdateUserService == nil {
-		return caller.InternalServerError(fiberContext, "update user service not initialized")
+		return caller.InternalError(fiberContext, apperror.ErrUpdateUserServiceNotInitialized)
 	}
 
 	var request handlermodel.UserUpdateRequestModel
@@ -42,7 +43,7 @@ func (handler *UserUpdateHandler) Update(fiberContext *fiber.Ctx) error {
 		case errors.Is(err, domainuser.ErrEmailAlreadyExists):
 			return caller.Conflict(fiberContext, err.Error())
 		default:
-			return caller.InternalServerError(fiberContext, err.Error())
+			return caller.InternalError(fiberContext, err)
 		}
 	}
 
@@ -57,17 +58,17 @@ func (handler *UserUpdateHandler) Update(fiberContext *fiber.Ctx) error {
 
 func validateUpdateUserRequest(fiberContext *fiber.Ctx, request *handlermodel.UserUpdateRequestModel) error {
 	if err := fiberContext.BodyParser(request); err != nil {
-		return errors.New("invalid json body")
+		return apperror.ErrInvalidJSONBody
 	}
 
 	request.ID = strings.TrimSpace(fiberContext.Params("id"))
 	request.Name = strings.TrimSpace(request.Name)
 	request.Email = strings.TrimSpace(request.Email)
 	if request.ID == "" {
-		return errors.New("id is required")
+		return apperror.ErrIDRequired
 	}
 	if request.Name == "" && request.Email == "" {
-		return errors.New("name or email is required")
+		return apperror.ErrNameOrEmailRequired
 	}
 	return nil
 }

@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	domainauth "backend-challenge-golang-7solution/internal/domain/auth"
-	repositoryauth "backend-challenge-golang-7solution/internal/repository/auth"
-	repositorymodel "backend-challenge-golang-7solution/internal/repository/auth/model"
-	servicemodel "backend-challenge-golang-7solution/internal/service/auth/model"
+	domainauth "github.com/twrnakata/user-auth-api/internal/domain/auth"
+	repositoryauth "github.com/twrnakata/user-auth-api/internal/repository/auth"
+	repositorymodel "github.com/twrnakata/user-auth-api/internal/repository/auth/model"
+	servicemodel "github.com/twrnakata/user-auth-api/internal/service/auth/model"
 	"golang.org/x/crypto/bcrypt"
 )
 

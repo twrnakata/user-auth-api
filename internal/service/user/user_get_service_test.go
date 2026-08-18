@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	domainuser "backend-challenge-golang-7solution/internal/domain/user"
-	repositoryuser "backend-challenge-golang-7solution/internal/repository/user"
+	domainuser "github.com/twrnakata/user-auth-api/internal/domain/user"
+	repositoryuser "github.com/twrnakata/user-auth-api/internal/repository/user"
 )
 
 type fakeGetUserRepository struct {

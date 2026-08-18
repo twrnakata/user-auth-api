@@ -4,18 +4,35 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
+	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	servicemodel "backend-challenge-golang-7solution/internal/service/auth/model"
+	servicemodel "github.com/twrnakata/user-auth-api/internal/service/auth/model"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/require"
 
-	domainauth "backend-challenge-golang-7solution/internal/domain/auth"
-	"backend-challenge-golang-7solution/pkg/caller"
+	domainauth "github.com/twrnakata/user-auth-api/internal/domain/auth"
+	"github.com/twrnakata/user-auth-api/pkg/caller"
 )
+
+func requireHiddenInternalError(t *testing.T, response *http.Response, leakedMessage string) {
+	t.Helper()
+	require.Equal(t, fiber.StatusInternalServerError, response.StatusCode)
+
+	responseBodyBytes, err := io.ReadAll(response.Body)
+	require.NoError(t, err)
+
+	var responseEnvelope map[string]any
+	require.NoError(t, json.Unmarshal(responseBodyBytes, &responseEnvelope))
+	require.Equal(t, caller.CodeInternalError, int(responseEnvelope["code"].(float64)))
+	require.Equal(t, "internal server error", responseEnvelope["message"])
+	require.Equal(t, "internal server error", responseEnvelope["errors"])
+	require.NotContains(t, string(responseBodyBytes), leakedMessage)
+}
 
 type fakeRegisterService struct {
 	called   bool
@@ -119,4 +136,22 @@ func TestAuthRegisterHandler_EmailAlreadyExists_Returns409(t *testing.T) {
 	var responseEnvelope map[string]any
 	require.NoError(t, json.Unmarshal(responseBodyBytes, &responseEnvelope))
 	require.Equal(t, caller.CodeConflict, int(responseEnvelope["code"].(float64)))
+}
+
+func TestAuthRegisterHandler_ServiceError_Returns500WithoutLeaking(t *testing.T) {
+	leakedMessage := "server selection timeout"
+	fakeService := &fakeRegisterService{
+		err: errors.New(leakedMessage),
+	}
+	handler := &AuthRegisterHandler{RegisterService: fakeService}
+
+	application := fiber.New()
+	application.Post("/auth/register", handler.Register)
+
+	body := `{"name":"Alice","email":"alice@example.com","password":"secret"}`
+	request := httptest.NewRequest("POST", "/auth/register", bytes.NewBufferString(body))
+	request.Header.Set("Content-Type", "application/json")
+	response, err := application.Test(request, -1)
+	require.NoError(t, err)
+	requireHiddenInternalError(t, response, leakedMessage)
 }

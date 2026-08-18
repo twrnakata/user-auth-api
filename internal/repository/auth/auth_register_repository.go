@@ -8,8 +8,9 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
-	repositorymodel "backend-challenge-golang-7solution/internal/repository/auth/model"
-	"backend-challenge-golang-7solution/pkg/datetime"
+	repositorymodel "github.com/twrnakata/user-auth-api/internal/repository/auth/model"
+	"github.com/twrnakata/user-auth-api/pkg/apperror"
+	"github.com/twrnakata/user-auth-api/pkg/datetime"
 )
 
 var ErrDuplicateKey = errors.New("duplicate key")
@@ -37,7 +38,7 @@ type AuthRegisterRepository struct {
 
 func NewAuthRegisterRepository(executionContext context.Context, userCollection *mongo.Collection) (*AuthRegisterRepository, error) {
 	if userCollection == nil {
-		return nil, errors.New("user collection is nil")
+		return nil, apperror.ErrUserCollectionNil
 	}
 
 	indexModel := mongo.IndexModel{
@@ -59,7 +60,7 @@ func NewAuthRegisterRepository(executionContext context.Context, userCollection 
 
 func (repository *AuthRegisterRepository) CreateRegisterUser(executionContext context.Context, request *repositorymodel.CreateRegisterUserRequestModel, response *repositorymodel.CreateRegisterUserModel) error {
 	if repository.userDocumentInserter == nil {
-		return errors.New("auth register repository not configured")
+		return apperror.ErrAuthRegisterRepositoryNotConfigured
 	}
 
 	createdAt := datetime.GetCurrentDateTimeNow()

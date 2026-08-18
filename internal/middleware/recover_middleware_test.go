@@ -9,7 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/require"
 
-	"backend-challenge-golang-7solution/pkg/caller"
+	"github.com/twrnakata/user-auth-api/pkg/caller"
 )
 
 func TestRecover_Panic_Returns500AndKeepsAppAlive(t *testing.T) {

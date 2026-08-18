@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http/httptest"
 	"testing"
@@ -11,8 +12,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/require"
 
-	domainuser "backend-challenge-golang-7solution/internal/domain/user"
-	"backend-challenge-golang-7solution/pkg/caller"
+	domainuser "github.com/twrnakata/user-auth-api/internal/domain/user"
+	"github.com/twrnakata/user-auth-api/pkg/caller"
 )
 
 type fakeGetUserService struct {
@@ -103,4 +104,20 @@ func TestUserGetHandler_InvalidUserID_Returns404(t *testing.T) {
 	require.NoError(t, json.Unmarshal(responseBodyBytes, &responseEnvelope))
 	require.Equal(t, caller.CodeNotFound, int(responseEnvelope["code"].(float64)))
 	require.Equal(t, domainuser.ErrUserNotFound.Error(), responseEnvelope["errors"])
+}
+
+func TestUserGetHandler_ServiceError_Returns500WithoutLeaking(t *testing.T) {
+	leakedMessage := "server selection timeout"
+	fakeService := &fakeGetUserService{
+		err: errors.New(leakedMessage),
+	}
+	handler := &UserGetHandler{GetUserService: fakeService}
+
+	application := fiber.New()
+	application.Get("/users/:id", handler.GetByID)
+
+	request := httptest.NewRequest("GET", "/users/u-123", nil)
+	response, err := application.Test(request, -1)
+	require.NoError(t, err)
+	requireHiddenInternalError(t, response, leakedMessage)
 }

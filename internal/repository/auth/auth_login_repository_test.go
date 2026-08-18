@@ -9,7 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 
-	repositorymodel "backend-challenge-golang-7solution/internal/repository/auth/model"
+	repositorymodel "github.com/twrnakata/user-auth-api/internal/repository/auth/model"
 )
 
 type fakeUserDocumentFinder struct {

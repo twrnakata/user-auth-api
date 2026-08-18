@@ -5,12 +5,13 @@ import (
 	"errors"
 	"strings"
 
-	handlermodel "backend-challenge-golang-7solution/internal/http/handler/model"
+	handlermodel "github.com/twrnakata/user-auth-api/internal/http/handler/model"
 	"github.com/gofiber/fiber/v2"
 
-	domainuser "backend-challenge-golang-7solution/internal/domain/user"
-	"backend-challenge-golang-7solution/pkg/caller"
-	"backend-challenge-golang-7solution/pkg/datetime"
+	domainuser "github.com/twrnakata/user-auth-api/internal/domain/user"
+	"github.com/twrnakata/user-auth-api/pkg/apperror"
+	"github.com/twrnakata/user-auth-api/pkg/caller"
+	"github.com/twrnakata/user-auth-api/pkg/datetime"
 )
 
 type UserGetHandler struct {
@@ -19,7 +20,7 @@ type UserGetHandler struct {
 
 func (handler *UserGetHandler) GetByID(fiberContext *fiber.Ctx) error {
 	if handler.GetUserService == nil {
-		return caller.InternalServerError(fiberContext, "get user service not initialized")
+		return caller.InternalError(fiberContext, apperror.ErrGetUserServiceNotInitialized)
 	}
 
 	var request handlermodel.UserGetRequestModel
@@ -37,7 +38,7 @@ func (handler *UserGetHandler) GetByID(fiberContext *fiber.Ctx) error {
 		case errors.Is(err, domainuser.ErrUserNotFound):
 			return caller.NotFound(fiberContext, err.Error())
 		default:
-			return caller.InternalServerError(fiberContext, err.Error())
+			return caller.InternalError(fiberContext, err)
 		}
 	}
 
@@ -53,7 +54,7 @@ func (handler *UserGetHandler) GetByID(fiberContext *fiber.Ctx) error {
 func validateGetUserRequest(fiberContext *fiber.Ctx, request *handlermodel.UserGetRequestModel) error {
 	request.ID = strings.TrimSpace(fiberContext.Params("id"))
 	if request.ID == "" {
-		return errors.New("id is required")
+		return apperror.ErrIDRequired
 	}
 	return nil
 }

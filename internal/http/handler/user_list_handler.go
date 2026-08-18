@@ -3,12 +3,13 @@ package handler
 import (
 	"context"
 
-	handlermodel "backend-challenge-golang-7solution/internal/http/handler/model"
+	handlermodel "github.com/twrnakata/user-auth-api/internal/http/handler/model"
 	"github.com/gofiber/fiber/v2"
 
-	domainuser "backend-challenge-golang-7solution/internal/domain/user"
-	"backend-challenge-golang-7solution/pkg/caller"
-	"backend-challenge-golang-7solution/pkg/datetime"
+	domainuser "github.com/twrnakata/user-auth-api/internal/domain/user"
+	"github.com/twrnakata/user-auth-api/pkg/apperror"
+	"github.com/twrnakata/user-auth-api/pkg/caller"
+	"github.com/twrnakata/user-auth-api/pkg/datetime"
 )
 
 type UserListHandler struct {
@@ -17,13 +18,13 @@ type UserListHandler struct {
 
 func (handler *UserListHandler) List(fiberContext *fiber.Ctx) error {
 	if handler.ListUserService == nil {
-		return caller.InternalServerError(fiberContext, "list user service not initialized")
+		return caller.InternalError(fiberContext, apperror.ErrListUserServiceNotInitialized)
 	}
 
 	var users []domainuser.User
 	err := handler.ListUserService.List(context.Background(), &users)
 	if err != nil {
-		return caller.InternalServerError(fiberContext, err.Error())
+		return caller.InternalError(fiberContext, err)
 	}
 
 	responseUsers := make([]handlermodel.UserListItemModel, 0, len(users))

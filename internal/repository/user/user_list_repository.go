@@ -2,14 +2,14 @@ package user
 
 import (
 	"context"
-	"errors"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
-	domainuser "backend-challenge-golang-7solution/internal/domain/user"
-	repositorymodel "backend-challenge-golang-7solution/internal/repository/user/model"
+	domainuser "github.com/twrnakata/user-auth-api/internal/domain/user"
+	repositorymodel "github.com/twrnakata/user-auth-api/internal/repository/user/model"
+	"github.com/twrnakata/user-auth-api/pkg/apperror"
 )
 
 type userDocumentsFinder interface {
@@ -36,7 +36,7 @@ type ListUserRepository struct {
 
 func NewListUserRepository(userCollection *mongo.Collection) (*ListUserRepository, error) {
 	if userCollection == nil {
-		return nil, errors.New("user collection is nil")
+		return nil, apperror.ErrUserCollectionNil
 	}
 
 	return &ListUserRepository{
@@ -49,10 +49,10 @@ func NewListUserRepository(userCollection *mongo.Collection) (*ListUserRepositor
 
 func (repository *ListUserRepository) ListUsers(executionContext context.Context, users *[]domainuser.User) error {
 	if repository.userDocumentsFinder == nil {
-		return errors.New("list user repository not configured")
+		return apperror.ErrListUserRepositoryNotConfigured
 	}
 	if users == nil {
-		return errors.New("users response is nil")
+		return apperror.ErrUsersResponseNil
 	}
 
 	var documents []repositorymodel.ListUsersDocumentModel

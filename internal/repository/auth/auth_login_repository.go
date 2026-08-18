@@ -7,7 +7,8 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 
-	repositorymodel "backend-challenge-golang-7solution/internal/repository/auth/model"
+	repositorymodel "github.com/twrnakata/user-auth-api/internal/repository/auth/model"
+	"github.com/twrnakata/user-auth-api/pkg/apperror"
 )
 
 var ErrNotFound = errors.New("not found")
@@ -31,7 +32,7 @@ type AuthLoginRepository struct {
 
 func NewAuthLoginRepository(userCollection *mongo.Collection) (*AuthLoginRepository, error) {
 	if userCollection == nil {
-		return nil, errors.New("user collection is nil")
+		return nil, apperror.ErrUserCollectionNil
 	}
 
 	return &AuthLoginRepository{
@@ -44,7 +45,7 @@ func NewAuthLoginRepository(userCollection *mongo.Collection) (*AuthLoginReposit
 
 func (repository *AuthLoginRepository) GetLoginUserByEmail(executionContext context.Context, request *repositorymodel.AuthLoginRepositoryRequestModel, response *repositorymodel.GetLoginUserByEmailModel) error {
 	if repository.userDocumentFinder == nil {
-		return errors.New("auth login repository not configured")
+		return apperror.ErrAuthLoginRepositoryNotConfigured
 	}
 
 	var document repositorymodel.GetLoginUserDocumentModel

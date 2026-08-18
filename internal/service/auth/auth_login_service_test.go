@@ -5,11 +5,12 @@ import (
 	"errors"
 	"testing"
 
-	domainauth "backend-challenge-golang-7solution/internal/domain/auth"
-	repositoryauth "backend-challenge-golang-7solution/internal/repository/auth"
-	repositorymodel "backend-challenge-golang-7solution/internal/repository/auth/model"
-	servicemodel "backend-challenge-golang-7solution/internal/service/auth/model"
-	jwtpkg "backend-challenge-golang-7solution/pkg/jwt"
+	domainauth "github.com/twrnakata/user-auth-api/internal/domain/auth"
+	repositoryauth "github.com/twrnakata/user-auth-api/internal/repository/auth"
+	repositorymodel "github.com/twrnakata/user-auth-api/internal/repository/auth/model"
+	servicemodel "github.com/twrnakata/user-auth-api/internal/service/auth/model"
+	"github.com/twrnakata/user-auth-api/pkg/apperror"
+	jwtpkg "github.com/twrnakata/user-auth-api/pkg/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -89,7 +90,7 @@ func TestAuthLoginService_Login_FillsResponseFromRepository(t *testing.T) {
 	}
 }
 
-func TestAuthLoginService_Login_NotFound_ReturnsErrUserNotFound(t *testing.T) {
+func TestAuthLoginService_Login_NotFound_ReturnsErrInvalidCredentials(t *testing.T) {
 	repository := &fakeAuthLoginRepository{
 		err: repositoryauth.ErrNotFound,
 	}
@@ -103,8 +104,8 @@ func TestAuthLoginService_Login_NotFound_ReturnsErrUserNotFound(t *testing.T) {
 		Email:    "unknown@example.com",
 		Password: "secret",
 	}, &servicemodel.LoginUserResponseModel{})
-	if !errors.Is(err, domainauth.ErrUserNotFound) {
-		t.Fatalf("expected ErrUserNotFound, got: %v", err)
+	if !errors.Is(err, domainauth.ErrInvalidCredentials) {
+		t.Fatalf("expected ErrInvalidCredentials, got: %v", err)
 	}
 }
 
@@ -118,8 +119,8 @@ func TestAuthLoginService_Login_TokenServiceNil_DoesNotQueryRepository(t *testin
 		Email:    "alice@example.com",
 		Password: "secret",
 	}, &servicemodel.LoginUserResponseModel{})
-	if err == nil || err.Error() != "token service not configured" {
-		t.Fatalf("expected token service not configured, got: %v", err)
+	if !errors.Is(err, apperror.ErrTokenServiceNotConfigured) {
+		t.Fatalf("expected ErrTokenServiceNotConfigured, got: %v", err)
 	}
 	if repository.called {
 		t.Fatalf("expected repository not to be called when token service is nil")

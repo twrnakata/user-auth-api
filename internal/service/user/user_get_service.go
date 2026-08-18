@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 
-	repositoryuser "backend-challenge-golang-7solution/internal/repository/user"
+	repositoryuser "github.com/twrnakata/user-auth-api/internal/repository/user"
 
-	domainuser "backend-challenge-golang-7solution/internal/domain/user"
+	domainuser "github.com/twrnakata/user-auth-api/internal/domain/user"
+	"github.com/twrnakata/user-auth-api/pkg/apperror"
 )
 
 type GetUserService struct {
@@ -15,10 +16,10 @@ type GetUserService struct {
 
 func (service *GetUserService) GetByID(executionContext context.Context, userID string, user *domainuser.User) error {
 	if service.Repository == nil {
-		return errors.New("get user repository not configured")
+		return apperror.ErrGetUserRepositoryNotConfigured
 	}
 	if user == nil {
-		return errors.New("user response is nil")
+		return apperror.ErrUserResponseNil
 	}
 
 	err := service.Repository.GetUserByID(executionContext, userID, user)

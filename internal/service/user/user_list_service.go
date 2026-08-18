@@ -2,9 +2,9 @@ package user
 
 import (
 	"context"
-	"errors"
 
-	domainuser "backend-challenge-golang-7solution/internal/domain/user"
+	domainuser "github.com/twrnakata/user-auth-api/internal/domain/user"
+	"github.com/twrnakata/user-auth-api/pkg/apperror"
 )
 
 type ListUserService struct {
@@ -13,10 +13,10 @@ type ListUserService struct {
 
 func (service *ListUserService) List(executionContext context.Context, users *[]domainuser.User) error {
 	if service.Repository == nil {
-		return errors.New("list user repository not configured")
+		return apperror.ErrListUserRepositoryNotConfigured
 	}
 	if users == nil {
-		return errors.New("users response is nil")
+		return apperror.ErrUsersResponseNil
 	}
 
 	err := service.Repository.ListUsers(executionContext, users)

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	domainuser "backend-challenge-golang-7solution/internal/domain/user"
+	domainuser "github.com/twrnakata/user-auth-api/internal/domain/user"
 )
 
 type fakeListUserRepository struct {

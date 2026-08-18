@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 
-	repositoryauth "backend-challenge-golang-7solution/internal/repository/auth"
-	repositorymodel "backend-challenge-golang-7solution/internal/repository/auth/model"
-	servicemodel "backend-challenge-golang-7solution/internal/service/auth/model"
+	repositoryauth "github.com/twrnakata/user-auth-api/internal/repository/auth"
+	repositorymodel "github.com/twrnakata/user-auth-api/internal/repository/auth/model"
+	servicemodel "github.com/twrnakata/user-auth-api/internal/service/auth/model"
 	"golang.org/x/crypto/bcrypt"
 
-	domainauth "backend-challenge-golang-7solution/internal/domain/auth"
+	domainauth "github.com/twrnakata/user-auth-api/internal/domain/auth"
+	"github.com/twrnakata/user-auth-api/pkg/apperror"
 )
 
 type AuthLoginService struct {
@@ -23,10 +24,10 @@ type TokenService interface {
 
 func (service *AuthLoginService) Login(executionContext context.Context, request *servicemodel.LoginUserRequestModel, response *servicemodel.LoginUserResponseModel) error {
 	if service.Repository == nil {
-		return errors.New("auth login repository not configured")
+		return apperror.ErrAuthLoginRepositoryNotConfigured
 	}
 	if service.TokenService == nil {
-		return errors.New("token service not configured")
+		return apperror.ErrTokenServiceNotConfigured
 	}
 
 	repositoryRequest := &repositorymodel.AuthLoginRepositoryRequestModel{
@@ -36,7 +37,8 @@ func (service *AuthLoginService) Login(executionContext context.Context, request
 	getLoginUserByEmailModel := &repositorymodel.GetLoginUserByEmailModel{}
 	if err := service.Repository.GetLoginUserByEmail(executionContext, repositoryRequest, getLoginUserByEmailModel); err != nil {
 		if errors.Is(err, repositoryauth.ErrNotFound) {
-			return domainauth.ErrUserNotFound
+			// Same error as a wrong password: do not reveal that the email is missing.
+			return domainauth.ErrInvalidCredentials
 		}
 		return err
 	}

@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 
-	servicemodel "backend-challenge-golang-7solution/internal/service/auth/model"
+	servicemodel "github.com/twrnakata/user-auth-api/internal/service/auth/model"
 )
 
 var (
+	// ErrInvalidCredentials is returned for both unknown email and wrong password.
+	// Login must not distinguish those cases (no 404 vs 401) so a caller cannot
+	// probe which emails are registered.
 	ErrInvalidCredentials = errors.New("invalid credentials")
-	ErrUserNotFound       = errors.New("user not found")
 )
 
 // LoginUserService is a port for the login use case.

@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 
-	repositoryauth "backend-challenge-golang-7solution/internal/repository/auth"
-	repositorymodel "backend-challenge-golang-7solution/internal/repository/auth/model"
-	servicemodel "backend-challenge-golang-7solution/internal/service/auth/model"
+	repositoryauth "github.com/twrnakata/user-auth-api/internal/repository/auth"
+	repositorymodel "github.com/twrnakata/user-auth-api/internal/repository/auth/model"
+	servicemodel "github.com/twrnakata/user-auth-api/internal/service/auth/model"
 	"golang.org/x/crypto/bcrypt"
 
-	domainauth "backend-challenge-golang-7solution/internal/domain/auth"
+	domainauth "github.com/twrnakata/user-auth-api/internal/domain/auth"
+	"github.com/twrnakata/user-auth-api/pkg/apperror"
 )
 
 // RegisterUserService is the application-layer implementation of the domain port.
@@ -20,7 +21,7 @@ type RegisterUserService struct {
 
 func (service *RegisterUserService) Register(executionContext context.Context, request *servicemodel.RegisterUserRequestModel, response *servicemodel.RegisterUserResponseModel) error {
 	if service.Repository == nil {
-		return errors.New("register repository not configured")
+		return apperror.ErrRegisterRepositoryNotConfigured
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)

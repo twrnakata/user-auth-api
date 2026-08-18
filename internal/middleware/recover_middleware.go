@@ -8,8 +8,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
-	"backend-challenge-golang-7solution/pkg/caller"
-	"backend-challenge-golang-7solution/pkg/datetime"
+	"github.com/twrnakata/user-auth-api/pkg/caller"
+	"github.com/twrnakata/user-auth-api/pkg/datetime"
 )
 
 type PanicLogModel struct {

@@ -7,8 +7,9 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 
-	domainuser "backend-challenge-golang-7solution/internal/domain/user"
-	repositorymodel "backend-challenge-golang-7solution/internal/repository/user/model"
+	domainuser "github.com/twrnakata/user-auth-api/internal/domain/user"
+	repositorymodel "github.com/twrnakata/user-auth-api/internal/repository/user/model"
+	"github.com/twrnakata/user-auth-api/pkg/apperror"
 )
 
 type userDocumentDeleter interface {
@@ -30,7 +31,7 @@ type DeleteUserRepository struct {
 
 func NewDeleteUserRepository(userCollection *mongo.Collection) (*DeleteUserRepository, error) {
 	if userCollection == nil {
-		return nil, errors.New("user collection is nil")
+		return nil, apperror.ErrUserCollectionNil
 	}
 
 	return &DeleteUserRepository{
@@ -43,10 +44,10 @@ func NewDeleteUserRepository(userCollection *mongo.Collection) (*DeleteUserRepos
 
 func (repository *DeleteUserRepository) DeleteUser(executionContext context.Context, userID string, user *domainuser.User) error {
 	if repository.userDocumentDeleter == nil {
-		return errors.New("delete user repository not configured")
+		return apperror.ErrDeleteUserRepositoryNotConfigured
 	}
 	if user == nil {
-		return errors.New("user response is nil")
+		return apperror.ErrUserResponseNil
 	}
 
 	objectID, err := bson.ObjectIDFromHex(userID)

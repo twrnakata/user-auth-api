@@ -1,4 +1,4 @@
-module backend-challenge-golang-7solution
+module github.com/twrnakata/user-auth-api
 
 go 1.25.0
 

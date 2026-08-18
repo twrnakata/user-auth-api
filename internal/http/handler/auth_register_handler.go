@@ -6,13 +6,14 @@ import (
 	"errors"
 	"strings"
 
-	handlermodel "backend-challenge-golang-7solution/internal/http/handler/model"
-	servicemodel "backend-challenge-golang-7solution/internal/service/auth/model"
+	handlermodel "github.com/twrnakata/user-auth-api/internal/http/handler/model"
+	servicemodel "github.com/twrnakata/user-auth-api/internal/service/auth/model"
 	"github.com/gofiber/fiber/v2"
 
-	domainauth "backend-challenge-golang-7solution/internal/domain/auth"
-	"backend-challenge-golang-7solution/pkg/caller"
-	"backend-challenge-golang-7solution/pkg/datetime"
+	domainauth "github.com/twrnakata/user-auth-api/internal/domain/auth"
+	"github.com/twrnakata/user-auth-api/pkg/apperror"
+	"github.com/twrnakata/user-auth-api/pkg/caller"
+	"github.com/twrnakata/user-auth-api/pkg/datetime"
 )
 
 type AuthRegisterHandler struct {
@@ -22,7 +23,7 @@ type AuthRegisterHandler struct {
 // Register handles POST /auth/register.
 func (handler *AuthRegisterHandler) Register(c *fiber.Ctx) error {
 	if handler.RegisterService == nil {
-		return caller.InternalServerError(c, "register service not initialized")
+		return caller.InternalError(c, apperror.ErrRegisterServiceNotInitialized)
 	}
 
 	var request handlermodel.AuthRegisterRequestModel
@@ -41,7 +42,7 @@ func (handler *AuthRegisterHandler) Register(c *fiber.Ctx) error {
 		if errors.Is(err, domainauth.ErrEmailAlreadyExists) {
 			return caller.Conflict(c, err.Error())
 		}
-		return caller.InternalServerError(c, err.Error())
+		return caller.InternalError(c, err)
 	}
 
 	responseBody := handlermodel.AuthRegisterResponseModel{
@@ -55,14 +56,14 @@ func (handler *AuthRegisterHandler) Register(c *fiber.Ctx) error {
 
 func validateRegisterRequest(c *fiber.Ctx, request *handlermodel.AuthRegisterRequestModel) error {
 	if err := c.BodyParser(request); err != nil {
-		return errors.New("invalid json body")
+		return apperror.ErrInvalidJSONBody
 	}
 
 	request.Name = strings.TrimSpace(request.Name)
 	request.Email = strings.TrimSpace(request.Email)
 	request.Password = strings.TrimSpace(request.Password)
 	if request.Name == "" || request.Email == "" || request.Password == "" {
-		return errors.New("name, email, password are required")
+		return apperror.ErrNameEmailPasswordRequired
 	}
 	return nil
 }

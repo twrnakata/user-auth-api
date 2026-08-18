@@ -1,10 +1,11 @@
 package configuration
 
 import (
-	"errors"
 	"strings"
 
 	"github.com/spf13/viper"
+
+	"github.com/twrnakata/user-auth-api/pkg/apperror"
 )
 
 type Environment struct {
@@ -38,13 +39,13 @@ func InitConfig() error {
 		Env.PORT = "8080"
 	}
 	if Env.MONGO_URI == "" {
-		return errors.New("MONGO_URI is required")
+		return apperror.ErrMongoURIRequired
 	}
 	if Env.MONGO_DATABASE == "" {
-		return errors.New("MONGO_DATABASE is required")
+		return apperror.ErrMongoDatabaseRequired
 	}
 	if Env.JWT_SECRET == "" {
-		return errors.New("JWT_SECRET is required")
+		return apperror.ErrJWTSecretRequired
 	}
 
 	return nil

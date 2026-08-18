@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 
-	repositorymodel "backend-challenge-golang-7solution/internal/repository/auth/model"
+	repositorymodel "github.com/twrnakata/user-auth-api/internal/repository/auth/model"
 )
 
 // RegisterUserRepository is a port for persisting a new user during register.

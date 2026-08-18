@@ -4,15 +4,16 @@ import (
 	"context"
 	"log"
 
-	httproute "backend-challenge-golang-7solution/internal/http/route"
-	repositoryauth "backend-challenge-golang-7solution/internal/repository/auth"
-	repositoryuser "backend-challenge-golang-7solution/internal/repository/user"
-	serviceauth "backend-challenge-golang-7solution/internal/service/auth"
-	serviceuser "backend-challenge-golang-7solution/internal/service/user"
-	"backend-challenge-golang-7solution/pkg/configuration"
-	"backend-challenge-golang-7solution/pkg/datetime"
-	jwtpkg "backend-challenge-golang-7solution/pkg/jwt"
-	"backend-challenge-golang-7solution/pkg/mongodb"
+	httproute "github.com/twrnakata/user-auth-api/internal/http/route"
+	"github.com/twrnakata/user-auth-api/internal/job"
+	repositoryauth "github.com/twrnakata/user-auth-api/internal/repository/auth"
+	repositoryuser "github.com/twrnakata/user-auth-api/internal/repository/user"
+	serviceauth "github.com/twrnakata/user-auth-api/internal/service/auth"
+	serviceuser "github.com/twrnakata/user-auth-api/internal/service/user"
+	"github.com/twrnakata/user-auth-api/pkg/configuration"
+	"github.com/twrnakata/user-auth-api/pkg/datetime"
+	jwtpkg "github.com/twrnakata/user-auth-api/pkg/jwt"
+	"github.com/twrnakata/user-auth-api/pkg/mongodb"
 )
 
 func main() {
@@ -67,6 +68,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	countUserRepository, err := repositoryuser.NewCountUserRepository(userCollection)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	jwtService, err := jwtpkg.NewJWTService(configuration.Env.JWT_SECRET, jwtpkg.DefaultExpireDuration)
 	if err != nil {
 		log.Fatal(err)
@@ -92,6 +98,18 @@ func main() {
 	deleteUserService := &serviceuser.DeleteUserService{
 		Repository: deleteUserRepository,
 	}
+	countUserService := &serviceuser.CountUserService{
+		Repository: countUserRepository,
+	}
+
+	userCountJob, err := job.NewUserCountJob(countUserService, nil, 0)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	jobContext, cancelJob := context.WithCancel(context.Background())
+	defer cancelJob()
+	go userCountJob.Run(jobContext)
 
 	application := httproute.NewApp(registerService, loginService, listUserService, getUserService, updateUserService, deleteUserService, jwtService)
 

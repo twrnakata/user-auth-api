@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http/httptest"
 	"testing"
@@ -11,8 +12,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/require"
 
-	domainuser "backend-challenge-golang-7solution/internal/domain/user"
-	"backend-challenge-golang-7solution/pkg/caller"
+	domainuser "github.com/twrnakata/user-auth-api/internal/domain/user"
+	"github.com/twrnakata/user-auth-api/pkg/caller"
 )
 
 type fakeListUserService struct {
@@ -91,8 +92,9 @@ func TestUserListHandler_List_Empty_Returns200AndEmptyArray(t *testing.T) {
 }
 
 func TestUserListHandler_List_ServiceError_Returns500(t *testing.T) {
+	leakedMessage := "server selection timeout"
 	fakeService := &fakeListUserService{
-		err: domainuser.ErrNotImplemented,
+		err: errors.New(leakedMessage),
 	}
 	handler := &UserListHandler{ListUserService: fakeService}
 
@@ -102,5 +104,5 @@ func TestUserListHandler_List_ServiceError_Returns500(t *testing.T) {
 	request := httptest.NewRequest("GET", "/users", nil)
 	response, err := application.Test(request, -1)
 	require.NoError(t, err)
-	require.Equal(t, fiber.StatusInternalServerError, response.StatusCode)
+	requireHiddenInternalError(t, response, leakedMessage)
 }
