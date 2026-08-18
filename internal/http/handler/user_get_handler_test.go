@@ -8,12 +8,12 @@ import (
 	"testing"
 	"time"
 
-	servicemodel "backend-challenge-golang/internal/service/user/model"
+	servicemodel "backend-challenge-golang-7solution/internal/service/user/model"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/require"
 
-	domainuser "backend-challenge-golang/internal/domain/user"
-	"backend-challenge-golang/pkg/caller"
+	domainuser "backend-challenge-golang-7solution/internal/domain/user"
+	"backend-challenge-golang-7solution/pkg/caller"
 )
 
 type fakeGetUserService struct {

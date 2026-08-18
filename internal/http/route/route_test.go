@@ -9,13 +9,13 @@ import (
 	"testing"
 	"time"
 
-	servicemodel "backend-challenge-golang/internal/service/auth/model"
-	userservicemodel "backend-challenge-golang/internal/service/user/model"
+	servicemodel "backend-challenge-golang-7solution/internal/service/auth/model"
+	userservicemodel "backend-challenge-golang-7solution/internal/service/user/model"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/require"
 
-	"backend-challenge-golang/pkg/caller"
-	jwtpkg "backend-challenge-golang/pkg/jwt"
+	"backend-challenge-golang-7solution/pkg/caller"
+	jwtpkg "backend-challenge-golang-7solution/pkg/jwt"
 )
 
 type fakeRegisterService struct {

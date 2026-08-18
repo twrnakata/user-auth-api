@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 
-	repositorymodel "backend-challenge-golang/internal/repository/auth/model"
+	repositorymodel "backend-challenge-golang-7solution/internal/repository/auth/model"
 )
 
 type AuthLoginRepository interface {

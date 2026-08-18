@@ -8,8 +8,8 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
-	repositorymodel "backend-challenge-golang/internal/repository/auth/model"
-	"backend-challenge-golang/pkg/datetime"
+	repositorymodel "backend-challenge-golang-7solution/internal/repository/auth/model"
+	"backend-challenge-golang-7solution/pkg/datetime"
 )
 
 var ErrDuplicateKey = errors.New("duplicate key")

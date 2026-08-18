@@ -4,15 +4,15 @@ import (
 	"context"
 	"log"
 
-	httproute "backend-challenge-golang/internal/http/route"
-	repositoryauth "backend-challenge-golang/internal/repository/auth"
-	repositoryuser "backend-challenge-golang/internal/repository/user"
-	serviceauth "backend-challenge-golang/internal/service/auth"
-	serviceuser "backend-challenge-golang/internal/service/user"
-	"backend-challenge-golang/pkg/configuration"
-	"backend-challenge-golang/pkg/datetime"
-	jwtpkg "backend-challenge-golang/pkg/jwt"
-	"backend-challenge-golang/pkg/mongodb"
+	httproute "backend-challenge-golang-7solution/internal/http/route"
+	repositoryauth "backend-challenge-golang-7solution/internal/repository/auth"
+	repositoryuser "backend-challenge-golang-7solution/internal/repository/user"
+	serviceauth "backend-challenge-golang-7solution/internal/service/auth"
+	serviceuser "backend-challenge-golang-7solution/internal/service/user"
+	"backend-challenge-golang-7solution/pkg/configuration"
+	"backend-challenge-golang-7solution/pkg/datetime"
+	jwtpkg "backend-challenge-golang-7solution/pkg/jwt"
+	"backend-challenge-golang-7solution/pkg/mongodb"
 )
 
 func main() {

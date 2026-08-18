@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"backend-challenge-golang/pkg/datetime"
+	"backend-challenge-golang-7solution/pkg/datetime"
 	"github.com/gofiber/fiber/v2"
 )
 

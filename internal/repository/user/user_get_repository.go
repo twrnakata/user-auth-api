@@ -7,8 +7,8 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 
-	repositorymodel "backend-challenge-golang/internal/repository/user/model"
-	servicemodel "backend-challenge-golang/internal/service/user/model"
+	repositorymodel "backend-challenge-golang-7solution/internal/repository/user/model"
+	servicemodel "backend-challenge-golang-7solution/internal/service/user/model"
 )
 
 var (

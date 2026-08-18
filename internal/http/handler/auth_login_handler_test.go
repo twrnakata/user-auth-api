@@ -8,12 +8,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	servicemodel "backend-challenge-golang/internal/service/auth/model"
+	servicemodel "backend-challenge-golang-7solution/internal/service/auth/model"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/require"
 
-	domainauth "backend-challenge-golang/internal/domain/auth"
-	"backend-challenge-golang/pkg/caller"
+	domainauth "backend-challenge-golang-7solution/internal/domain/auth"
+	"backend-challenge-golang-7solution/pkg/caller"
 )
 
 type fakeLoginService struct {

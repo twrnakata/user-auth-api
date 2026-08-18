@@ -7,7 +7,7 @@ import (
 	jwtlib "github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/require"
 
-	"backend-challenge-golang/pkg/datetime"
+	"backend-challenge-golang-7solution/pkg/datetime"
 )
 
 func TestJWTService_CreateToken_CanBeParsedWithSameSecret(t *testing.T) {

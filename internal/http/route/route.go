@@ -1,11 +1,11 @@
 package route
 
 import (
-	domainauth "backend-challenge-golang/internal/domain/auth"
-	domainuser "backend-challenge-golang/internal/domain/user"
-	"backend-challenge-golang/internal/http/handler"
-	"backend-challenge-golang/internal/middleware"
-	jwtpkg "backend-challenge-golang/pkg/jwt"
+	domainauth "backend-challenge-golang-7solution/internal/domain/auth"
+	domainuser "backend-challenge-golang-7solution/internal/domain/user"
+	"backend-challenge-golang-7solution/internal/http/handler"
+	"backend-challenge-golang-7solution/internal/middleware"
+	jwtpkg "backend-challenge-golang-7solution/pkg/jwt"
 
 	"github.com/gofiber/fiber/v2"
 )

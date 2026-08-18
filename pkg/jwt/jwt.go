@@ -8,7 +8,7 @@ import (
 
 	jwtlib "github.com/golang-jwt/jwt/v5"
 
-	"backend-challenge-golang/pkg/datetime"
+	"backend-challenge-golang-7solution/pkg/datetime"
 )
 
 const (

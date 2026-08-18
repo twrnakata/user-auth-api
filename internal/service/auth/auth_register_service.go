@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 
-	repositoryauth "backend-challenge-golang/internal/repository/auth"
-	repositorymodel "backend-challenge-golang/internal/repository/auth/model"
-	servicemodel "backend-challenge-golang/internal/service/auth/model"
+	repositoryauth "backend-challenge-golang-7solution/internal/repository/auth"
+	repositorymodel "backend-challenge-golang-7solution/internal/repository/auth/model"
+	servicemodel "backend-challenge-golang-7solution/internal/service/auth/model"
 	"golang.org/x/crypto/bcrypt"
 
-	domainauth "backend-challenge-golang/internal/domain/auth"
+	domainauth "backend-challenge-golang-7solution/internal/domain/auth"
 )
 
 // RegisterUserService is the application-layer implementation of the domain port.

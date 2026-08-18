@@ -5,13 +5,13 @@ import (
 	"errors"
 	"strings"
 
-	handlermodel "backend-challenge-golang/internal/http/handler/model"
-	servicemodel "backend-challenge-golang/internal/service/user/model"
+	handlermodel "backend-challenge-golang-7solution/internal/http/handler/model"
+	servicemodel "backend-challenge-golang-7solution/internal/service/user/model"
 	"github.com/gofiber/fiber/v2"
 
-	domainuser "backend-challenge-golang/internal/domain/user"
-	"backend-challenge-golang/pkg/caller"
-	"backend-challenge-golang/pkg/datetime"
+	domainuser "backend-challenge-golang-7solution/internal/domain/user"
+	"backend-challenge-golang-7solution/pkg/caller"
+	"backend-challenge-golang-7solution/pkg/datetime"
 )
 
 type UserGetHandler struct {

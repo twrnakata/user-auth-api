@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	servicemodel "backend-challenge-golang/internal/service/user/model"
+	servicemodel "backend-challenge-golang-7solution/internal/service/user/model"
 )
 
 var (

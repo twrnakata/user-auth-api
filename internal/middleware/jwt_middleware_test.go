@@ -7,8 +7,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/require"
 
-	"backend-challenge-golang/pkg/caller"
-	jwtpkg "backend-challenge-golang/pkg/jwt"
+	"backend-challenge-golang-7solution/pkg/caller"
+	jwtpkg "backend-challenge-golang-7solution/pkg/jwt"
 )
 
 func TestJWT_MissingAuthorizationHeader_Returns401(t *testing.T) {

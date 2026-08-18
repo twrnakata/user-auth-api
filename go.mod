@@ -1,4 +1,4 @@
-module backend-challenge-golang
+module backend-challenge-golang-7solution
 
 go 1.25.0
 

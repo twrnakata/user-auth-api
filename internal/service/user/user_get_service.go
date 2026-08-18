@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 
-	repositoryuser "backend-challenge-golang/internal/repository/user"
-	repositorymodel "backend-challenge-golang/internal/repository/user/model"
-	servicemodel "backend-challenge-golang/internal/service/user/model"
+	repositoryuser "backend-challenge-golang-7solution/internal/repository/user"
+	repositorymodel "backend-challenge-golang-7solution/internal/repository/user/model"
+	servicemodel "backend-challenge-golang-7solution/internal/service/user/model"
 
-	domainuser "backend-challenge-golang/internal/domain/user"
+	domainuser "backend-challenge-golang-7solution/internal/domain/user"
 )
 
 type GetUserService struct {

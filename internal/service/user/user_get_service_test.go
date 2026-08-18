@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	domainuser "backend-challenge-golang/internal/domain/user"
-	repositoryuser "backend-challenge-golang/internal/repository/user"
-	repositorymodel "backend-challenge-golang/internal/repository/user/model"
-	servicemodel "backend-challenge-golang/internal/service/user/model"
+	domainuser "backend-challenge-golang-7solution/internal/domain/user"
+	repositoryuser "backend-challenge-golang-7solution/internal/repository/user"
+	repositorymodel "backend-challenge-golang-7solution/internal/repository/user/model"
+	servicemodel "backend-challenge-golang-7solution/internal/service/user/model"
 )
 
 type fakeGetUserRepository struct {

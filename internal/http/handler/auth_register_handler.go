@@ -6,13 +6,13 @@ import (
 	"errors"
 	"strings"
 
-	handlermodel "backend-challenge-golang/internal/http/handler/model"
-	servicemodel "backend-challenge-golang/internal/service/auth/model"
+	handlermodel "backend-challenge-golang-7solution/internal/http/handler/model"
+	servicemodel "backend-challenge-golang-7solution/internal/service/auth/model"
 	"github.com/gofiber/fiber/v2"
 
-	domainauth "backend-challenge-golang/internal/domain/auth"
-	"backend-challenge-golang/pkg/caller"
-	"backend-challenge-golang/pkg/datetime"
+	domainauth "backend-challenge-golang-7solution/internal/domain/auth"
+	"backend-challenge-golang-7solution/pkg/caller"
+	"backend-challenge-golang-7solution/pkg/datetime"
 )
 
 type AuthRegisterHandler struct {
