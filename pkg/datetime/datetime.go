@@ -2,7 +2,10 @@ package datetime
 
 import "time"
 
-const TimeZoneAsiaBangkok = "Asia/Bangkok"
+const (
+	TimeZoneAsiaBangkok   = "Asia/Bangkok"
+	DefaultDateTimeFormat = "2006-01-02 15:04:05"
+)
 
 var (
 	defaultTimeZone = TimeZoneAsiaBangkok
@@ -38,4 +41,11 @@ func GetCurrentLocation() *time.Location {
 
 func GetCurrentDateTimeNow() time.Time {
 	return time.Now().In(defaultLocation)
+}
+
+func FormatDateTime(value time.Time) string {
+	if value.IsZero() {
+		return ""
+	}
+	return value.In(defaultLocation).Format(DefaultDateTimeFormat)
 }

@@ -35,3 +35,11 @@ func TestGetCurrentDateTimeNow_MatchesWallClockInProjectTimezone(t *testing.T) {
 
 	require.True(t, !currentDateTime.Before(before) && !currentDateTime.After(after))
 }
+
+func TestFormatDateTime_YearMonthDayHourMinuteSecondWithoutTimezone(t *testing.T) {
+	err := SetDefaultTimeZone(TimeZoneAsiaBangkok)
+	require.NoError(t, err)
+
+	value := time.Date(2026, 8, 18, 12, 1, 31, 0, time.UTC)
+	require.Equal(t, "2026-08-18 19:01:31", FormatDateTime(value))
+}

@@ -22,11 +22,11 @@ const (
 
 // ResponseModel is the standard JSON envelope.
 type ResponseModel struct {
-	Code       int         `json:"code"`
-	Message    string      `json:"message"`
-	Data       any         `json:"data,omitempty"`
-	Errors     any         `json:"errors,omitempty"`
-	ServerTime string      `json:"serverTime"`
+	Code       int    `json:"code"`
+	Message    string `json:"message"`
+	Data       any    `json:"data,omitempty"`
+	Errors     any    `json:"errors,omitempty"`
+	ServerTime string `json:"serverTime"`
 }
 
 func now() string {
@@ -104,4 +104,3 @@ func InternalServerError(c *fiber.Ctx, errs any) error {
 		ServerTime: now(),
 	})
 }
-

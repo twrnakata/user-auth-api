@@ -1,11 +1,11 @@
 package model
 
-type LoginUserRequest struct {
+type LoginUserRequestModel struct {
 	Email    string
 	Password string
 }
 
-type LoginUserResponse struct {
+type LoginUserResponseModel struct {
 	Token string
 	ID    string
 	Name  string

@@ -18,7 +18,7 @@ type RegisterUserService struct {
 	Repository domainauth.RegisterUserRepository
 }
 
-func (service *RegisterUserService) Register(executionContext context.Context, request *servicemodel.RegisterUserRequest, response *servicemodel.RegisterUserResponse) error {
+func (service *RegisterUserService) Register(executionContext context.Context, request *servicemodel.RegisterUserRequestModel, response *servicemodel.RegisterUserResponseModel) error {
 	if service.Repository == nil {
 		return errors.New("register repository not configured")
 	}
@@ -28,14 +28,14 @@ func (service *RegisterUserService) Register(executionContext context.Context, r
 		return err
 	}
 
-	createRequest := &repositorymodel.CreateRegisterUserRequest{
+	createRegisterUserRequestModel := &repositorymodel.CreateRegisterUserRequestModel{
 		Name:         request.Name,
 		Email:        request.Email,
 		PasswordHash: string(hash),
 	}
 
-	createResp := &repositorymodel.CreateRegisterUserResponse{}
-	err = service.Repository.CreateRegisterUser(executionContext, createRequest, createResp)
+	createRegisterUserModel := &repositorymodel.CreateRegisterUserModel{}
+	err = service.Repository.CreateRegisterUser(executionContext, createRegisterUserRequestModel, createRegisterUserModel)
 	if err != nil {
 		if errors.Is(err, repositoryauth.ErrDuplicateKey) {
 			return domainauth.ErrEmailAlreadyExists
@@ -43,9 +43,9 @@ func (service *RegisterUserService) Register(executionContext context.Context, r
 		return err
 	}
 
-	response.ID = createResp.ID
-	response.Name = createResp.Name
-	response.Email = createResp.Email
-	response.CreatedAt = createResp.CreatedAt
+	response.ID = createRegisterUserModel.ID
+	response.Name = createRegisterUserModel.Name
+	response.Email = createRegisterUserModel.Email
+	response.CreatedAt = createRegisterUserModel.CreatedAt
 	return nil
 }

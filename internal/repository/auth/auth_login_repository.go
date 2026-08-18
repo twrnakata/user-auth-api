@@ -42,12 +42,12 @@ func NewAuthLoginRepository(userCollection *mongo.Collection) (*AuthLoginReposit
 	}, nil
 }
 
-func (repository *AuthLoginRepository) GetLoginUserByEmail(executionContext context.Context, request *repositorymodel.AuthLoginRepositoryRequest, response *repositorymodel.AuthLoginRepositoryResponse) error {
+func (repository *AuthLoginRepository) GetLoginUserByEmail(executionContext context.Context, request *repositorymodel.AuthLoginRepositoryRequestModel, response *repositorymodel.GetLoginUserByEmailModel) error {
 	if repository.userDocumentFinder == nil {
 		return errors.New("auth login repository not configured")
 	}
 
-	var document repositorymodel.GetLoginUserDocument
+	var document repositorymodel.GetLoginUserDocumentModel
 	err := repository.userDocumentFinder.FindOne(executionContext, bson.M{"email": request.Email}, &document)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {

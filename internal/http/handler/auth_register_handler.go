@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"strings"
-	"time"
 
 	handlermodel "backend-challenge-golang/internal/http/handler/model"
 	servicemodel "backend-challenge-golang/internal/service/auth/model"
@@ -13,6 +12,7 @@ import (
 
 	domainauth "backend-challenge-golang/internal/domain/auth"
 	"backend-challenge-golang/pkg/caller"
+	"backend-challenge-golang/pkg/datetime"
 )
 
 type AuthRegisterHandler struct {
@@ -25,14 +25,14 @@ func (handler *AuthRegisterHandler) Register(c *fiber.Ctx) error {
 		return caller.InternalServerError(c, "register service not initialized")
 	}
 
-	var request handlermodel.AuthRegisterRequest
+	var request handlermodel.AuthRegisterRequestModel
 	err := validateRegisterRequest(c, &request)
 	if err != nil {
 		return caller.BadRequest(c, err.Error())
 	}
 
-	var response servicemodel.RegisterUserResponse
-	err = handler.RegisterService.Register(context.Background(), &servicemodel.RegisterUserRequest{
+	var response servicemodel.RegisterUserResponseModel
+	err = handler.RegisterService.Register(context.Background(), &servicemodel.RegisterUserRequestModel{
 		Name:     request.Name,
 		Email:    request.Email,
 		Password: request.Password,
@@ -44,16 +44,16 @@ func (handler *AuthRegisterHandler) Register(c *fiber.Ctx) error {
 		return caller.InternalServerError(c, err.Error())
 	}
 
-	responseBody := handlermodel.AuthRegisterResponse{
+	responseBody := handlermodel.AuthRegisterResponseModel{
 		ID:        response.ID,
 		Name:      response.Name,
 		Email:     response.Email,
-		CreatedAt: response.CreatedAt.Format(time.RFC3339),
+		CreatedAt: datetime.FormatDateTime(response.CreatedAt),
 	}
 	return caller.Created(c, responseBody)
 }
 
-func validateRegisterRequest(c *fiber.Ctx, request *handlermodel.AuthRegisterRequest) error {
+func validateRegisterRequest(c *fiber.Ctx, request *handlermodel.AuthRegisterRequestModel) error {
 	if err := c.BodyParser(request); err != nil {
 		return errors.New("invalid json body")
 	}

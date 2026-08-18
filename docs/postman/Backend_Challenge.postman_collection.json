@@ -1,0 +1,476 @@
+{
+  "info": {
+    "_postman_id": "c3e8a1d4-7b2f-4e91-9c55-4a6f8d12b0e1",
+    "name": "Backend Challenge",
+    "description": "User Management APIs for 7Solutions backend challenge.\n\nAuth:\n- `/health` and `/auth/*` do not require JWT\n- `/users/*` requires `Authorization: Bearer {{access_token}}`\n\nHappy path order: Health → Register → Login.\n\nSee docs/postman/README.md",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "GET Health - OK",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "});",
+                  "pm.test('Body has status ok', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.status).to.eql('ok');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "No JWT. Returns `{ status: \"ok\" }`."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register - Happy",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const REGISTER_NAME = 'Alice';",
+                  "const REGISTER_EMAIL = 'alice_' + Date.now() + '@example.com';",
+                  "const REGISTER_PASSWORD = 'secret123';",
+                  "",
+                  "pm.environment.set('register_name', REGISTER_NAME);",
+                  "pm.environment.set('register_email', REGISTER_EMAIL);",
+                  "pm.environment.set('register_password', REGISTER_PASSWORD);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () {",
+                  "    pm.expect(pm.response.code).to.eql(201);",
+                  "});",
+                  "pm.test('Envelope code is 0', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(0);",
+                  "    pm.expect(json.data).to.have.property('id');",
+                  "    pm.expect(json.data.name).to.eql(pm.environment.get('register_name'));",
+                  "    pm.expect(json.data.email).to.eql(pm.environment.get('register_email'));",
+                  "    pm.expect(json.data).to.have.property('createdAt');",
+                  "    pm.environment.set('user_id', json.data.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{register_name}}\",\n  \"email\": \"{{register_email}}\",\n  \"password\": \"{{register_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Happy path. Pre-request สุ่ม email เพื่อไม่ชน unique index"
+          },
+          "response": []
+        },
+        {
+          "name": "Register - Invalid JSON",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.expect(pm.response.code).to.eql(400);",
+                  "});",
+                  "pm.test('Envelope code is 400', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Invalid JSON body → 400"
+          },
+          "response": []
+        },
+        {
+          "name": "Register - Missing Fields",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.expect(pm.response.code).to.eql(400);",
+                  "});",
+                  "pm.test('Envelope code is 400', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"email\": \"\",\n  \"password\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "name, email, password required → 400"
+          },
+          "response": []
+        },
+        {
+          "name": "Register - Email Conflict",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 409', function () {",
+                  "    pm.expect(pm.response.code).to.eql(409);",
+                  "});",
+                  "pm.test('Envelope code is 409', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(409);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{register_name}}\",\n  \"email\": \"{{register_email}}\",\n  \"password\": \"{{register_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "ยิงหลัง Register - Happy ด้วย email เดิม → 409"
+          },
+          "response": []
+        },
+        {
+          "name": "Login - Happy",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "});",
+                  "pm.test('Envelope has token and user', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(0);",
+                  "    pm.expect(json.data.token).to.be.a('string').and.not.empty;",
+                  "    pm.expect(json.data.user.id).to.eql(pm.environment.get('user_id'));",
+                  "    pm.expect(json.data.user.name).to.eql(pm.environment.get('register_name'));",
+                  "    pm.environment.set('access_token', json.data.token);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{register_email}}\",\n  \"password\": \"{{register_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Happy path. Tests เก็บ access_token สำหรับ /users"
+          },
+          "response": []
+        },
+        {
+          "name": "Login - Missing Fields",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 400', function () {",
+                  "    pm.expect(pm.response.code).to.eql(400);",
+                  "});",
+                  "pm.test('Envelope code is 400', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"\",\n  \"password\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "email and password required → 400"
+          },
+          "response": []
+        },
+        {
+          "name": "Login - Invalid Credentials",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 401', function () {",
+                  "    pm.expect(pm.response.code).to.eql(401);",
+                  "});",
+                  "pm.test('Envelope code is 401', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{register_email}}\",\n  \"password\": \"wrong-password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "password ผิด → 401"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "GET Users - Missing JWT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 401', function () {",
+                  "    pm.expect(pm.response.code).to.eql(401);",
+                  "});",
+                  "pm.test('Envelope code is 401', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            },
+            "description": "ไม่มี Authorization header → 401 จาก JWT middleware\nCRUD ยังไม่มีในรอบนี้"
+          },
+          "response": []
+        },
+        {
+          "name": "GET Users - Invalid JWT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 401', function () {",
+                  "    pm.expect(pm.response.code).to.eql(401);",
+                  "});",
+                  "pm.test('Envelope code is 401', function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.code).to.eql(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid-token",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            },
+            "description": "Bearer token ผิด → 401 จาก JWT middleware"
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

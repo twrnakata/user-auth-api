@@ -57,13 +57,13 @@ func NewAuthRegisterRepository(executionContext context.Context, userCollection 
 	}, nil
 }
 
-func (repository *AuthRegisterRepository) CreateRegisterUser(executionContext context.Context, request *repositorymodel.CreateRegisterUserRequest, response *repositorymodel.CreateRegisterUserResponse) error {
+func (repository *AuthRegisterRepository) CreateRegisterUser(executionContext context.Context, request *repositorymodel.CreateRegisterUserRequestModel, response *repositorymodel.CreateRegisterUserModel) error {
 	if repository.userDocumentInserter == nil {
 		return errors.New("auth register repository not configured")
 	}
 
 	createdAt := datetime.GetCurrentDateTimeNow()
-	document := repositorymodel.CreateRegisterUserDocument{
+	document := repositorymodel.CreateRegisterUserDocumentModel{
 		Name:         request.Name,
 		Email:        request.Email,
 		PasswordHash: request.PasswordHash,

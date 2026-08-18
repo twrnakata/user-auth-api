@@ -19,12 +19,12 @@ import (
 
 type fakeRegisterService struct {
 	called   bool
-	gotReq   servicemodel.RegisterUserRequest
-	response *servicemodel.RegisterUserResponse
+	gotReq   servicemodel.RegisterUserRequestModel
+	response *servicemodel.RegisterUserResponseModel
 	err      error
 }
 
-func (service *fakeRegisterService) Register(executionContext context.Context, request *servicemodel.RegisterUserRequest, response *servicemodel.RegisterUserResponse) error {
+func (service *fakeRegisterService) Register(executionContext context.Context, request *servicemodel.RegisterUserRequestModel, response *servicemodel.RegisterUserResponseModel) error {
 	service.called = true
 	if request != nil {
 		service.gotReq = *request
@@ -60,7 +60,7 @@ func TestAuthRegisterHandler_InvalidJSON_Returns400(t *testing.T) {
 
 func TestAuthRegisterHandler_ValidBody_Returns201AndData(t *testing.T) {
 	fakeService := &fakeRegisterService{
-		response: &servicemodel.RegisterUserResponse{
+		response: &servicemodel.RegisterUserResponseModel{
 			ID:        "u-123",
 			Name:      "Alice",
 			Email:     "alice@example.com",
@@ -91,7 +91,7 @@ func TestAuthRegisterHandler_ValidBody_Returns201AndData(t *testing.T) {
 	require.Equal(t, "u-123", responseData["id"])
 	require.Equal(t, "Alice", responseData["name"])
 	require.Equal(t, "alice@example.com", responseData["email"])
-	require.Equal(t, "2026-01-02T03:04:05Z", responseData["createdAt"])
+	require.Equal(t, "2026-01-02 10:04:05", responseData["createdAt"])
 
 	require.True(t, fakeService.called)
 	require.Equal(t, "Alice", fakeService.gotReq.Name)

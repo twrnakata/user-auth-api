@@ -2,20 +2,20 @@ package model
 
 import "time"
 
-type CreateRegisterUserRequest struct {
+type CreateRegisterUserRequestModel struct {
 	Name         string
 	Email        string
 	PasswordHash string
 }
 
-type CreateRegisterUserResponse struct {
+type CreateRegisterUserModel struct {
 	ID        string
 	Name      string
 	Email     string
 	CreatedAt time.Time
 }
 
-type CreateRegisterUserDocument struct {
+type CreateRegisterUserDocumentModel struct {
 	Name         string    `bson:"name"`
 	Email        string    `bson:"email"`
 	PasswordHash string    `bson:"passwordHash"`

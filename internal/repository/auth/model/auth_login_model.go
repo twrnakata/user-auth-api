@@ -2,18 +2,18 @@ package model
 
 import "go.mongodb.org/mongo-driver/v2/bson"
 
-type AuthLoginRepositoryRequest struct {
+type AuthLoginRepositoryRequestModel struct {
 	Email string
 }
 
-type AuthLoginRepositoryResponse struct {
+type GetLoginUserByEmailModel struct {
 	ID           string
 	Name         string
 	Email        string
 	PasswordHash string
 }
 
-type GetLoginUserDocument struct {
+type GetLoginUserDocumentModel struct {
 	ID           bson.ObjectID `bson:"_id"`
 	Name         string        `bson:"name"`
 	Email        string        `bson:"email"`

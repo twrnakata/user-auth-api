@@ -2,13 +2,13 @@ package model
 
 import "time"
 
-type RegisterUserRequest struct {
+type RegisterUserRequestModel struct {
 	Name     string
 	Email    string
 	Password string
 }
 
-type RegisterUserResponse struct {
+type RegisterUserResponseModel struct {
 	ID        string
 	Name      string
 	Email     string

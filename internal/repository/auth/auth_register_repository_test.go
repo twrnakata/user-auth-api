@@ -42,9 +42,9 @@ func TestAuthRegisterRepository_CreateRegisterUser_InsertsDocumentAndFillsRespon
 		userDocumentInserter: inserter,
 	}
 
-	var response repositorymodel.CreateRegisterUserResponse
+	var response repositorymodel.CreateRegisterUserModel
 	beforeInsert := datetime.GetCurrentDateTimeNow().Add(-time.Second)
-	err := repository.CreateRegisterUser(context.Background(), &repositorymodel.CreateRegisterUserRequest{
+	err := repository.CreateRegisterUser(context.Background(), &repositorymodel.CreateRegisterUserRequestModel{
 		Name:         "Alice",
 		Email:        "alice@example.com",
 		PasswordHash: "hashed-password",
@@ -54,7 +54,7 @@ func TestAuthRegisterRepository_CreateRegisterUser_InsertsDocumentAndFillsRespon
 	require.NoError(t, err)
 	require.True(t, inserter.called)
 
-	document, ok := inserter.document.(repositorymodel.CreateRegisterUserDocument)
+	document, ok := inserter.document.(repositorymodel.CreateRegisterUserDocumentModel)
 	require.True(t, ok)
 	require.Equal(t, "Alice", document.Name)
 	require.Equal(t, "alice@example.com", document.Email)
@@ -80,11 +80,11 @@ func TestAuthRegisterRepository_CreateRegisterUser_DuplicateKey_ReturnsErrDuplic
 		userDocumentInserter: inserter,
 	}
 
-	err := repository.CreateRegisterUser(context.Background(), &repositorymodel.CreateRegisterUserRequest{
+	err := repository.CreateRegisterUser(context.Background(), &repositorymodel.CreateRegisterUserRequestModel{
 		Name:         "Alice",
 		Email:        "alice@example.com",
 		PasswordHash: "hashed-password",
-	}, &repositorymodel.CreateRegisterUserResponse{})
+	}, &repositorymodel.CreateRegisterUserModel{})
 
 	require.ErrorIs(t, err, ErrDuplicateKey)
 }
@@ -98,11 +98,11 @@ func TestAuthRegisterRepository_CreateRegisterUser_OtherInsertError_ReturnsSameE
 		userDocumentInserter: inserter,
 	}
 
-	err := repository.CreateRegisterUser(context.Background(), &repositorymodel.CreateRegisterUserRequest{
+	err := repository.CreateRegisterUser(context.Background(), &repositorymodel.CreateRegisterUserRequestModel{
 		Name:         "Alice",
 		Email:        "alice@example.com",
 		PasswordHash: "hashed-password",
-	}, &repositorymodel.CreateRegisterUserResponse{})
+	}, &repositorymodel.CreateRegisterUserModel{})
 
 	require.ErrorIs(t, err, insertError)
 	require.False(t, errors.Is(err, ErrDuplicateKey))

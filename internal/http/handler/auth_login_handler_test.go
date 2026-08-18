@@ -18,11 +18,11 @@ import (
 
 type fakeLoginService struct {
 	called   bool
-	response *servicemodel.LoginUserResponse
+	response *servicemodel.LoginUserResponseModel
 	err      error
 }
 
-func (service *fakeLoginService) Login(executionContext context.Context, request *servicemodel.LoginUserRequest, response *servicemodel.LoginUserResponse) error {
+func (service *fakeLoginService) Login(executionContext context.Context, request *servicemodel.LoginUserRequestModel, response *servicemodel.LoginUserResponseModel) error {
 	service.called = true
 	if response != nil && service.response != nil {
 		*response = *service.response
@@ -55,7 +55,7 @@ func TestAuthLoginHandler_InvalidJSON_Returns400(t *testing.T) {
 
 func TestAuthLoginHandler_ValidBody_Returns200AndToken(t *testing.T) {
 	fakeService := &fakeLoginService{
-		response: &servicemodel.LoginUserResponse{
+		response: &servicemodel.LoginUserResponseModel{
 			Token: "jwt-token",
 			ID:    "u-1",
 			Name:  "Alice",

@@ -1,16 +1,16 @@
 package model
 
-type AuthLoginRequest struct {
+type AuthLoginRequestModel struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-type AuthLoginUserResponse struct {
+type AuthLoginUserResponseModel struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
-type AuthLoginResponse struct {
-	Token string                `json:"token"`
-	User  AuthLoginUserResponse `json:"user"`
+type AuthLoginResponseModel struct {
+	Token string                     `json:"token"`
+	User  AuthLoginUserResponseModel `json:"user"`
 }

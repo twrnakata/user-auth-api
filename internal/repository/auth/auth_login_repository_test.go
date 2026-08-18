@@ -15,7 +15,7 @@ import (
 type fakeUserDocumentFinder struct {
 	called   bool
 	filter   any
-	document repositorymodel.GetLoginUserDocument
+	document repositorymodel.GetLoginUserDocumentModel
 	err      error
 }
 
@@ -26,7 +26,7 @@ func (finder *fakeUserDocumentFinder) FindOne(executionContext context.Context, 
 		return finder.err
 	}
 
-	document, ok := result.(*repositorymodel.GetLoginUserDocument)
+	document, ok := result.(*repositorymodel.GetLoginUserDocumentModel)
 	if !ok {
 		return errors.New("unexpected login document type")
 	}
@@ -43,7 +43,7 @@ func TestNewAuthLoginRepository_NilCollection_ReturnsError(t *testing.T) {
 func TestAuthLoginRepository_GetLoginUserByEmail_FillsResponseFromDocument(t *testing.T) {
 	objectID := bson.NewObjectID()
 	finder := &fakeUserDocumentFinder{
-		document: repositorymodel.GetLoginUserDocument{
+		document: repositorymodel.GetLoginUserDocumentModel{
 			ID:           objectID,
 			Name:         "Alice",
 			Email:        "alice@example.com",
@@ -54,8 +54,8 @@ func TestAuthLoginRepository_GetLoginUserByEmail_FillsResponseFromDocument(t *te
 		userDocumentFinder: finder,
 	}
 
-	var response repositorymodel.AuthLoginRepositoryResponse
-	err := repository.GetLoginUserByEmail(context.Background(), &repositorymodel.AuthLoginRepositoryRequest{
+	var response repositorymodel.GetLoginUserByEmailModel
+	err := repository.GetLoginUserByEmail(context.Background(), &repositorymodel.AuthLoginRepositoryRequestModel{
 		Email: "alice@example.com",
 	}, &response)
 
@@ -76,9 +76,9 @@ func TestAuthLoginRepository_GetLoginUserByEmail_NotFound_ReturnsErrNotFound(t *
 		userDocumentFinder: finder,
 	}
 
-	err := repository.GetLoginUserByEmail(context.Background(), &repositorymodel.AuthLoginRepositoryRequest{
+	err := repository.GetLoginUserByEmail(context.Background(), &repositorymodel.AuthLoginRepositoryRequestModel{
 		Email: "unknown@example.com",
-	}, &repositorymodel.AuthLoginRepositoryResponse{})
+	}, &repositorymodel.GetLoginUserByEmailModel{})
 
 	require.ErrorIs(t, err, ErrNotFound)
 }
@@ -92,9 +92,9 @@ func TestAuthLoginRepository_GetLoginUserByEmail_OtherFindError_ReturnsSameError
 		userDocumentFinder: finder,
 	}
 
-	err := repository.GetLoginUserByEmail(context.Background(), &repositorymodel.AuthLoginRepositoryRequest{
+	err := repository.GetLoginUserByEmail(context.Background(), &repositorymodel.AuthLoginRepositoryRequestModel{
 		Email: "alice@example.com",
-	}, &repositorymodel.AuthLoginRepositoryResponse{})
+	}, &repositorymodel.GetLoginUserByEmailModel{})
 
 	require.ErrorIs(t, err, findError)
 	require.False(t, errors.Is(err, ErrNotFound))

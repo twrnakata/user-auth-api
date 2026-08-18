@@ -15,12 +15,12 @@ import (
 
 type fakeRegisterUserRepository struct {
 	called   bool
-	gotReq   repositorymodel.CreateRegisterUserRequest
-	response *repositorymodel.CreateRegisterUserResponse
+	gotReq   repositorymodel.CreateRegisterUserRequestModel
+	response *repositorymodel.CreateRegisterUserModel
 	err      error
 }
 
-func (repository *fakeRegisterUserRepository) CreateRegisterUser(executionContext context.Context, request *repositorymodel.CreateRegisterUserRequest, response *repositorymodel.CreateRegisterUserResponse) error {
+func (repository *fakeRegisterUserRepository) CreateRegisterUser(executionContext context.Context, request *repositorymodel.CreateRegisterUserRequestModel, response *repositorymodel.CreateRegisterUserModel) error {
 	repository.called = true
 	if request != nil {
 		repository.gotReq = *request
@@ -33,7 +33,7 @@ func (repository *fakeRegisterUserRepository) CreateRegisterUser(executionContex
 
 func TestRegisterUserService_HashesPasswordAndCallsRepository(t *testing.T) {
 	repository := &fakeRegisterUserRepository{
-		response: &repositorymodel.CreateRegisterUserResponse{
+		response: &repositorymodel.CreateRegisterUserModel{
 			ID:        "u-1",
 			Name:      "Alice",
 			Email:     "alice@example.com",
@@ -45,8 +45,8 @@ func TestRegisterUserService_HashesPasswordAndCallsRepository(t *testing.T) {
 		Repository: repository,
 	}
 
-	var response servicemodel.RegisterUserResponse
-	err := service.Register(context.Background(), &servicemodel.RegisterUserRequest{
+	var response servicemodel.RegisterUserResponseModel
+	err := service.Register(context.Background(), &servicemodel.RegisterUserRequestModel{
 		Name:     "Alice",
 		Email:    "alice@example.com",
 		Password: "secret",
@@ -82,11 +82,11 @@ func TestRegisterUserService_DuplicateKey_ReturnsEmailAlreadyExists(t *testing.T
 		Repository: repository,
 	}
 
-	err := service.Register(context.Background(), &servicemodel.RegisterUserRequest{
+	err := service.Register(context.Background(), &servicemodel.RegisterUserRequestModel{
 		Name:     "Alice",
 		Email:    "alice@example.com",
 		Password: "secret",
-	}, &servicemodel.RegisterUserResponse{})
+	}, &servicemodel.RegisterUserResponseModel{})
 	if !errors.Is(err, domainauth.ErrEmailAlreadyExists) {
 		t.Fatalf("expected ErrEmailAlreadyExists, got: %v", err)
 	}

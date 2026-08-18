@@ -2,7 +2,10 @@ package route
 
 import (
 	domainauth "backend-challenge-golang/internal/domain/auth"
+	domainuser "backend-challenge-golang/internal/domain/user"
 	"backend-challenge-golang/internal/http/handler"
+	"backend-challenge-golang/internal/middleware"
+	jwtpkg "backend-challenge-golang/pkg/jwt"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -15,25 +18,32 @@ type Route interface {
 type route struct {
 	AuthRegisterHandler *handler.AuthRegisterHandler
 	AuthLoginHandler    *handler.AuthLoginHandler
+	UserGetHandler      *handler.UserGetHandler
+	JWTService          *jwtpkg.JWTService
 }
 
-func NewRoute(registerService domainauth.RegisterUserService, loginService domainauth.LoginUserService) Route {
+func NewRoute(registerService domainauth.RegisterUserService, loginService domainauth.LoginUserService, getUserService domainuser.GetUserService, jwtService *jwtpkg.JWTService) Route {
 	authRegisterHandler := &handler.AuthRegisterHandler{
 		RegisterService: registerService,
 	}
 	authLoginHandler := &handler.AuthLoginHandler{
 		LoginService: loginService,
 	}
+	userGetHandler := &handler.UserGetHandler{
+		GetUserService: getUserService,
+	}
 
 	return &route{
 		AuthRegisterHandler: authRegisterHandler,
 		AuthLoginHandler:    authLoginHandler,
+		UserGetHandler:      userGetHandler,
+		JWTService:          jwtService,
 	}
 }
 
-func NewApp(registerService domainauth.RegisterUserService, loginService domainauth.LoginUserService) *fiber.App {
+func NewApp(registerService domainauth.RegisterUserService, loginService domainauth.LoginUserService, getUserService domainuser.GetUserService, jwtService *jwtpkg.JWTService) *fiber.App {
 	application := fiber.New()
-	newRoute := NewRoute(registerService, loginService)
+	newRoute := NewRoute(registerService, loginService, getUserService, jwtService)
 	newRoute.InitRoute(application)
 	return application
 }
@@ -48,10 +58,13 @@ func (route *route) InitRouteGroup(applicationGroup fiber.Router) {
 
 	authGroup := applicationGroup.Group("/auth")
 	route.authGroup(authGroup)
+
+	usersGroup := applicationGroup.Group("/users", middleware.JWT(route.JWTService))
+	route.usersGroup(usersGroup)
 }
 
-func (route *route) healthGroup(applicationGroup fiber.Router) {
-	applicationGroup.Get("/health", func(context *fiber.Ctx) error {
+func (route *route) healthGroup(appGroup fiber.Router) {
+	appGroup.Get("/health", func(context *fiber.Ctx) error {
 		return context.Status(200).JSON(fiber.Map{
 			"status": "ok",
 		})

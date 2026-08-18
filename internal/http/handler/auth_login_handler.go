@@ -24,13 +24,13 @@ func (handler *AuthLoginHandler) Login(c *fiber.Ctx) error {
 		return caller.InternalServerError(c, "login service not initialized")
 	}
 
-	var request handlermodel.AuthLoginRequest
+	var request handlermodel.AuthLoginRequestModel
 	if err := validateLoginRequest(c, &request); err != nil {
 		return caller.BadRequest(c, err.Error())
 	}
 
-	var response servicemodel.LoginUserResponse
-	err := handler.LoginService.Login(context.Background(), &servicemodel.LoginUserRequest{
+	var response servicemodel.LoginUserResponseModel
+	err := handler.LoginService.Login(context.Background(), &servicemodel.LoginUserRequestModel{
 		Email:    request.Email,
 		Password: request.Password,
 	}, &response)
@@ -45,9 +45,9 @@ func (handler *AuthLoginHandler) Login(c *fiber.Ctx) error {
 		}
 	}
 
-	responseBody := handlermodel.AuthLoginResponse{
+	responseBody := handlermodel.AuthLoginResponseModel{
 		Token: response.Token,
-		User: handlermodel.AuthLoginUserResponse{
+		User: handlermodel.AuthLoginUserResponseModel{
 			ID:   response.ID,
 			Name: response.Name,
 		},
@@ -56,7 +56,7 @@ func (handler *AuthLoginHandler) Login(c *fiber.Ctx) error {
 	return caller.Success(c, responseBody)
 }
 
-func validateLoginRequest(c *fiber.Ctx, request *handlermodel.AuthLoginRequest) error {
+func validateLoginRequest(c *fiber.Ctx, request *handlermodel.AuthLoginRequestModel) error {
 	if err := c.BodyParser(request); err != nil {
 		return errors.New("invalid json body")
 	}
