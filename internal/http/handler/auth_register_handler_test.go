@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	servicemodel "github.com/twrnakata/user-auth-api/internal/service/auth/model"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/require"
+	servicemodel "github.com/twrnakata/user-auth-api/internal/service/auth/model"
 
 	domainauth "github.com/twrnakata/user-auth-api/internal/domain/auth"
 	"github.com/twrnakata/user-auth-api/pkg/caller"
@@ -73,6 +73,28 @@ func TestAuthRegisterHandler_InvalidJSON_Returns400(t *testing.T) {
 	require.Equal(t, caller.CodeInvalidParam, int(responseEnvelope["code"].(float64)))
 	require.Equal(t, "invalid parameter", responseEnvelope["message"])
 	require.False(t, fakeService.called)
+}
+
+func TestAuthRegisterHandler_InvalidEmail_Returns400(t *testing.T) {
+	fakeService := &fakeRegisterService{}
+	handler := &AuthRegisterHandler{RegisterService: fakeService}
+
+	application := fiber.New()
+	application.Post("/auth/register", handler.Register)
+
+	body := `{"name":"Alice","email":"not-an-email","password":"secret"}`
+	request := httptest.NewRequest("POST", "/auth/register", bytes.NewBufferString(body))
+	request.Header.Set("Content-Type", "application/json")
+	response, err := application.Test(request, -1)
+	require.NoError(t, err)
+	require.Equal(t, fiber.StatusBadRequest, response.StatusCode)
+	require.False(t, fakeService.called)
+
+	responseBodyBytes, _ := io.ReadAll(response.Body)
+	var responseEnvelope map[string]any
+	require.NoError(t, json.Unmarshal(responseBodyBytes, &responseEnvelope))
+	require.Equal(t, caller.CodeInvalidParam, int(responseEnvelope["code"].(float64)))
+	require.Equal(t, "invalid email format", responseEnvelope["errors"])
 }
 
 func TestAuthRegisterHandler_ValidBody_Returns201AndData(t *testing.T) {

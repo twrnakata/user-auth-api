@@ -17,6 +17,8 @@ var (
 	ErrNameOrEmailRequired              = errors.New("name or email is required")
 	ErrEmailAndPasswordRequired         = errors.New("email and password are required")
 	ErrNameEmailPasswordRequired        = errors.New("name, email, password are required")
+	ErrInvalidEmail                     = errors.New("invalid email format")
+	ErrInvalidUserID                    = errors.New("invalid user id")
 	ErrMissingAuthorizationHeader       = errors.New("missing authorization header")
 	ErrInvalidAuthorizationHeaderFormat = errors.New("invalid authorization header format")
 	ErrMissingBearerToken               = errors.New("missing bearer token")

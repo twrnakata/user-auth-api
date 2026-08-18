@@ -1,6 +1,9 @@
+name: user-auth-api
+
 services:
   mongo:
     image: mongo:7
+    container_name: user-auth-mongo
     ports:
       - "27017:27017"
     environment:
@@ -9,6 +12,31 @@ services:
       MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
     volumes:
       - user_management_mongo_database:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 1)'",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  api:
+    build: .
+    container_name: user-auth-api
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      PORT: "8080"
+      MONGO_URI: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongo:27017/${MONGO_DATABASE}?authSource=admin
+      MONGO_DATABASE: ${MONGO_DATABASE}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      mongo:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:

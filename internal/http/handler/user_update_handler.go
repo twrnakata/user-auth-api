@@ -5,13 +5,14 @@ import (
 	"errors"
 	"strings"
 
-	handlermodel "github.com/twrnakata/user-auth-api/internal/http/handler/model"
 	"github.com/gofiber/fiber/v2"
+	handlermodel "github.com/twrnakata/user-auth-api/internal/http/handler/model"
 
 	domainuser "github.com/twrnakata/user-auth-api/internal/domain/user"
 	"github.com/twrnakata/user-auth-api/pkg/apperror"
 	"github.com/twrnakata/user-auth-api/pkg/caller"
 	"github.com/twrnakata/user-auth-api/pkg/datetime"
+	"github.com/twrnakata/user-auth-api/pkg/validation"
 )
 
 type UserUpdateHandler struct {
@@ -37,7 +38,7 @@ func (handler *UserUpdateHandler) Update(fiberContext *fiber.Ctx) error {
 	if err != nil {
 		switch {
 		case errors.Is(err, domainuser.ErrInvalidUserID):
-			return caller.NotFound(fiberContext, domainuser.ErrUserNotFound.Error())
+			return caller.BadRequest(fiberContext, err.Error())
 		case errors.Is(err, domainuser.ErrUserNotFound):
 			return caller.NotFound(fiberContext, err.Error())
 		case errors.Is(err, domainuser.ErrEmailAlreadyExists):
@@ -67,8 +68,14 @@ func validateUpdateUserRequest(fiberContext *fiber.Ctx, request *handlermodel.Us
 	if request.ID == "" {
 		return apperror.ErrIDRequired
 	}
+	if !validation.IsValidObjectID(request.ID) {
+		return apperror.ErrInvalidUserID
+	}
 	if request.Name == "" && request.Email == "" {
 		return apperror.ErrNameOrEmailRequired
+	}
+	if request.Email != "" && !validation.IsValidEmail(request.Email) {
+		return apperror.ErrInvalidEmail
 	}
 	return nil
 }

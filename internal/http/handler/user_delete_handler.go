@@ -5,13 +5,14 @@ import (
 	"errors"
 	"strings"
 
-	handlermodel "github.com/twrnakata/user-auth-api/internal/http/handler/model"
 	"github.com/gofiber/fiber/v2"
+	handlermodel "github.com/twrnakata/user-auth-api/internal/http/handler/model"
 
 	domainuser "github.com/twrnakata/user-auth-api/internal/domain/user"
 	"github.com/twrnakata/user-auth-api/pkg/apperror"
 	"github.com/twrnakata/user-auth-api/pkg/caller"
 	"github.com/twrnakata/user-auth-api/pkg/datetime"
+	"github.com/twrnakata/user-auth-api/pkg/validation"
 )
 
 type UserDeleteHandler struct {
@@ -34,7 +35,7 @@ func (handler *UserDeleteHandler) Delete(fiberContext *fiber.Ctx) error {
 	if err != nil {
 		switch {
 		case errors.Is(err, domainuser.ErrInvalidUserID):
-			return caller.NotFound(fiberContext, domainuser.ErrUserNotFound.Error())
+			return caller.BadRequest(fiberContext, err.Error())
 		case errors.Is(err, domainuser.ErrUserNotFound):
 			return caller.NotFound(fiberContext, err.Error())
 		default:
@@ -55,6 +56,9 @@ func validateDeleteUserRequest(fiberContext *fiber.Ctx, request *handlermodel.Us
 	request.ID = strings.TrimSpace(fiberContext.Params("id"))
 	if request.ID == "" {
 		return apperror.ErrIDRequired
+	}
+	if !validation.IsValidObjectID(request.ID) {
+		return apperror.ErrInvalidUserID
 	}
 	return nil
 }

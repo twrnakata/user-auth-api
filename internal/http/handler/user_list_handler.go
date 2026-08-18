@@ -3,8 +3,8 @@ package handler
 import (
 	"context"
 
-	handlermodel "github.com/twrnakata/user-auth-api/internal/http/handler/model"
 	"github.com/gofiber/fiber/v2"
+	handlermodel "github.com/twrnakata/user-auth-api/internal/http/handler/model"
 
 	domainuser "github.com/twrnakata/user-auth-api/internal/domain/user"
 	"github.com/twrnakata/user-auth-api/pkg/apperror"

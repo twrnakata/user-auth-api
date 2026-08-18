@@ -5,13 +5,14 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/gofiber/fiber/v2"
 	handlermodel "github.com/twrnakata/user-auth-api/internal/http/handler/model"
 	servicemodel "github.com/twrnakata/user-auth-api/internal/service/auth/model"
-	"github.com/gofiber/fiber/v2"
 
 	domainauth "github.com/twrnakata/user-auth-api/internal/domain/auth"
 	"github.com/twrnakata/user-auth-api/pkg/apperror"
 	"github.com/twrnakata/user-auth-api/pkg/caller"
+	"github.com/twrnakata/user-auth-api/pkg/validation"
 )
 
 // AuthLoginHandler handles POST /auth/login.
@@ -63,6 +64,9 @@ func validateLoginRequest(c *fiber.Ctx, request *handlermodel.AuthLoginRequestMo
 	request.Password = strings.TrimSpace(request.Password)
 	if request.Email == "" || request.Password == "" {
 		return apperror.ErrEmailAndPasswordRequired
+	}
+	if !validation.IsValidEmail(request.Email) {
+		return apperror.ErrInvalidEmail
 	}
 	return nil
 }

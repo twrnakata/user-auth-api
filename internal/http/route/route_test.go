@@ -167,7 +167,7 @@ func TestNewApp_RoutesAreWired(t *testing.T) {
 	token, err := jwtService.CreateToken("u-1", "Alice")
 	require.NoError(t, err)
 
-	getUserRequest := httptest.NewRequest("GET", "/users/u-1", nil)
+	getUserRequest := httptest.NewRequest("GET", "/users/507f1f77bcf86cd799439011", nil)
 	getUserRequest.Header.Set("Authorization", "Bearer "+token)
 	getUserResponse, err := application.Test(getUserRequest, -1)
 	require.NoError(t, err)
@@ -180,14 +180,14 @@ func TestNewApp_RoutesAreWired(t *testing.T) {
 	require.Equal(t, fiber.StatusOK, listUsersResponse.StatusCode)
 
 	updateUserBody := `{"name":"Bob"}`
-	updateUserRequest := httptest.NewRequest("PUT", "/users/u-1", bytes.NewBufferString(updateUserBody))
+	updateUserRequest := httptest.NewRequest("PUT", "/users/507f1f77bcf86cd799439011", bytes.NewBufferString(updateUserBody))
 	updateUserRequest.Header.Set("Authorization", "Bearer "+token)
 	updateUserRequest.Header.Set("Content-Type", "application/json")
 	updateUserResponse, err := application.Test(updateUserRequest, -1)
 	require.NoError(t, err)
 	require.Equal(t, fiber.StatusOK, updateUserResponse.StatusCode)
 
-	deleteUserRequest := httptest.NewRequest("DELETE", "/users/u-1", nil)
+	deleteUserRequest := httptest.NewRequest("DELETE", "/users/507f1f77bcf86cd799439011", nil)
 	deleteUserRequest.Header.Set("Authorization", "Bearer "+token)
 	deleteUserResponse, err := application.Test(deleteUserRequest, -1)
 	require.NoError(t, err)

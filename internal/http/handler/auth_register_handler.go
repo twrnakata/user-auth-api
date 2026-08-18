@@ -6,14 +6,15 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/gofiber/fiber/v2"
 	handlermodel "github.com/twrnakata/user-auth-api/internal/http/handler/model"
 	servicemodel "github.com/twrnakata/user-auth-api/internal/service/auth/model"
-	"github.com/gofiber/fiber/v2"
 
 	domainauth "github.com/twrnakata/user-auth-api/internal/domain/auth"
 	"github.com/twrnakata/user-auth-api/pkg/apperror"
 	"github.com/twrnakata/user-auth-api/pkg/caller"
 	"github.com/twrnakata/user-auth-api/pkg/datetime"
+	"github.com/twrnakata/user-auth-api/pkg/validation"
 )
 
 type AuthRegisterHandler struct {
@@ -64,6 +65,9 @@ func validateRegisterRequest(c *fiber.Ctx, request *handlermodel.AuthRegisterReq
 	request.Password = strings.TrimSpace(request.Password)
 	if request.Name == "" || request.Email == "" || request.Password == "" {
 		return apperror.ErrNameEmailPasswordRequired
+	}
+	if !validation.IsValidEmail(request.Email) {
+		return apperror.ErrInvalidEmail
 	}
 	return nil
 }
