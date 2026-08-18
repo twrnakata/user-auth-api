@@ -9,19 +9,19 @@ import (
 	domainuser "backend-challenge-golang-7solution/internal/domain/user"
 )
 
-type GetUserService struct {
-	Repository domainuser.GetUserRepository
+type DeleteUserService struct {
+	Repository domainuser.DeleteUserRepository
 }
 
-func (service *GetUserService) GetByID(executionContext context.Context, userID string, user *domainuser.User) error {
+func (service *DeleteUserService) Delete(executionContext context.Context, userID string, user *domainuser.User) error {
 	if service.Repository == nil {
-		return errors.New("get user repository not configured")
+		return errors.New("delete user repository not configured")
 	}
 	if user == nil {
 		return errors.New("user response is nil")
 	}
 
-	err := service.Repository.GetUserByID(executionContext, userID, user)
+	err := service.Repository.DeleteUser(executionContext, userID, user)
 	if err != nil {
 		if errors.Is(err, repositoryuser.ErrInvalidObjectID) {
 			return domainuser.ErrInvalidUserID

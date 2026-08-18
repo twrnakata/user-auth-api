@@ -1,12 +1,7 @@
 package user
 
-import (
-	"context"
-
-	repositorymodel "backend-challenge-golang-7solution/internal/repository/user/model"
-	servicemodel "backend-challenge-golang-7solution/internal/service/user/model"
-)
+import "context"
 
 type GetUserRepository interface {
-	GetUserByID(executionContext context.Context, request *servicemodel.GetUserRequestModel, response *repositorymodel.GetUserByIDModel) error
+	GetUserByID(executionContext context.Context, userID string, user *User) error
 }

@@ -10,10 +10,10 @@ import (
 	"time"
 
 	servicemodel "backend-challenge-golang-7solution/internal/service/auth/model"
-	userservicemodel "backend-challenge-golang-7solution/internal/service/user/model"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/require"
 
+	domainuser "backend-challenge-golang-7solution/internal/domain/user"
 	"backend-challenge-golang-7solution/pkg/caller"
 	jwtpkg "backend-challenge-golang-7solution/pkg/jwt"
 )
@@ -40,13 +40,46 @@ func (service *fakeLoginService) Login(executionContext context.Context, request
 	return nil
 }
 
-type fakeGetUserService struct {
-	response *userservicemodel.GetUserResponseModel
+type fakeListUserService struct {
+	users []domainuser.User
 }
 
-func (service *fakeGetUserService) GetByID(executionContext context.Context, request *userservicemodel.GetUserRequestModel, response *userservicemodel.GetUserResponseModel) error {
-	if response != nil && service.response != nil {
-		*response = *service.response
+func (service *fakeListUserService) List(executionContext context.Context, users *[]domainuser.User) error {
+	if users != nil && service.users != nil {
+		*users = service.users
+	}
+	return nil
+}
+
+type fakeGetUserService struct {
+	user *domainuser.User
+}
+
+func (service *fakeGetUserService) GetByID(executionContext context.Context, userID string, user *domainuser.User) error {
+	if user != nil && service.user != nil {
+		*user = *service.user
+	}
+	return nil
+}
+
+type fakeUpdateUserService struct {
+	user *domainuser.User
+}
+
+func (service *fakeUpdateUserService) Update(executionContext context.Context, userID string, user *domainuser.User) error {
+	if user != nil && service.user != nil {
+		*user = *service.user
+	}
+	return nil
+}
+
+type fakeDeleteUserService struct {
+	user *domainuser.User
+}
+
+func (service *fakeDeleteUserService) Delete(executionContext context.Context, userID string, user *domainuser.User) error {
+	if user != nil && service.user != nil {
+		*user = *service.user
 	}
 	return nil
 }
@@ -68,8 +101,31 @@ func TestNewApp_RoutesAreWired(t *testing.T) {
 			ID:    "u-1",
 			Name:  "Alice",
 		},
+	}, &fakeListUserService{
+		users: []domainuser.User{
+			{
+				ID:        "u-1",
+				Name:      "Alice",
+				Email:     "alice@example.com",
+				CreatedAt: time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC),
+			},
+		},
 	}, &fakeGetUserService{
-		response: &userservicemodel.GetUserResponseModel{
+		user: &domainuser.User{
+			ID:        "u-1",
+			Name:      "Alice",
+			Email:     "alice@example.com",
+			CreatedAt: time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC),
+		},
+	}, &fakeUpdateUserService{
+		user: &domainuser.User{
+			ID:        "u-1",
+			Name:      "Bob",
+			Email:     "alice@example.com",
+			CreatedAt: time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC),
+		},
+	}, &fakeDeleteUserService{
+		user: &domainuser.User{
 			ID:        "u-1",
 			Name:      "Alice",
 			Email:     "alice@example.com",
@@ -116,4 +172,24 @@ func TestNewApp_RoutesAreWired(t *testing.T) {
 	getUserResponse, err := application.Test(getUserRequest, -1)
 	require.NoError(t, err)
 	require.Equal(t, fiber.StatusOK, getUserResponse.StatusCode)
+
+	listUsersRequest := httptest.NewRequest("GET", "/users", nil)
+	listUsersRequest.Header.Set("Authorization", "Bearer "+token)
+	listUsersResponse, err := application.Test(listUsersRequest, -1)
+	require.NoError(t, err)
+	require.Equal(t, fiber.StatusOK, listUsersResponse.StatusCode)
+
+	updateUserBody := `{"name":"Bob"}`
+	updateUserRequest := httptest.NewRequest("PUT", "/users/u-1", bytes.NewBufferString(updateUserBody))
+	updateUserRequest.Header.Set("Authorization", "Bearer "+token)
+	updateUserRequest.Header.Set("Content-Type", "application/json")
+	updateUserResponse, err := application.Test(updateUserRequest, -1)
+	require.NoError(t, err)
+	require.Equal(t, fiber.StatusOK, updateUserResponse.StatusCode)
+
+	deleteUserRequest := httptest.NewRequest("DELETE", "/users/u-1", nil)
+	deleteUserRequest.Header.Set("Authorization", "Bearer "+token)
+	deleteUserResponse, err := application.Test(deleteUserRequest, -1)
+	require.NoError(t, err)
+	require.Equal(t, fiber.StatusOK, deleteUserResponse.StatusCode)
 }

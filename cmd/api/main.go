@@ -52,6 +52,21 @@ func main() {
 		log.Fatal(err)
 	}
 
+	listUserRepository, err := repositoryuser.NewListUserRepository(userCollection)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	updateUserRepository, err := repositoryuser.NewUpdateUserRepository(userCollection)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	deleteUserRepository, err := repositoryuser.NewDeleteUserRepository(userCollection)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	jwtService, err := jwtpkg.NewJWTService(configuration.Env.JWT_SECRET, jwtpkg.DefaultExpireDuration)
 	if err != nil {
 		log.Fatal(err)
@@ -68,8 +83,17 @@ func main() {
 	getUserService := &serviceuser.GetUserService{
 		Repository: getUserRepository,
 	}
+	listUserService := &serviceuser.ListUserService{
+		Repository: listUserRepository,
+	}
+	updateUserService := &serviceuser.UpdateUserService{
+		Repository: updateUserRepository,
+	}
+	deleteUserService := &serviceuser.DeleteUserService{
+		Repository: deleteUserRepository,
+	}
 
-	application := httproute.NewApp(registerService, loginService, getUserService, jwtService)
+	application := httproute.NewApp(registerService, loginService, listUserService, getUserService, updateUserService, deleteUserService, jwtService)
 
 	log.Printf("listening on :%s", configuration.Env.PORT)
 	if err := application.Listen(":" + configuration.Env.PORT); err != nil {

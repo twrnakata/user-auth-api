@@ -13,23 +13,23 @@ import (
 	"backend-challenge-golang-7solution/pkg/datetime"
 )
 
-type UserGetHandler struct {
-	GetUserService domainuser.GetUserService
+type UserDeleteHandler struct {
+	DeleteUserService domainuser.DeleteUserService
 }
 
-func (handler *UserGetHandler) GetByID(fiberContext *fiber.Ctx) error {
-	if handler.GetUserService == nil {
-		return caller.InternalServerError(fiberContext, "get user service not initialized")
+func (handler *UserDeleteHandler) Delete(fiberContext *fiber.Ctx) error {
+	if handler.DeleteUserService == nil {
+		return caller.InternalServerError(fiberContext, "delete user service not initialized")
 	}
 
-	var request handlermodel.UserGetRequestModel
-	err := validateGetUserRequest(fiberContext, &request)
+	var request handlermodel.UserDeleteRequestModel
+	err := validateDeleteUserRequest(fiberContext, &request)
 	if err != nil {
 		return caller.BadRequest(fiberContext, err.Error())
 	}
 
 	var user domainuser.User
-	err = handler.GetUserService.GetByID(context.Background(), request.ID, &user)
+	err = handler.DeleteUserService.Delete(context.Background(), request.ID, &user)
 	if err != nil {
 		switch {
 		case errors.Is(err, domainuser.ErrInvalidUserID):
@@ -41,7 +41,7 @@ func (handler *UserGetHandler) GetByID(fiberContext *fiber.Ctx) error {
 		}
 	}
 
-	responseBody := handlermodel.UserGetResponseModel{
+	responseBody := handlermodel.UserDeleteResponseModel{
 		ID:        user.ID,
 		Name:      user.Name,
 		Email:     user.Email,
@@ -50,7 +50,7 @@ func (handler *UserGetHandler) GetByID(fiberContext *fiber.Ctx) error {
 	return caller.Success(fiberContext, responseBody)
 }
 
-func validateGetUserRequest(fiberContext *fiber.Ctx, request *handlermodel.UserGetRequestModel) error {
+func validateDeleteUserRequest(fiberContext *fiber.Ctx, request *handlermodel.UserDeleteRequestModel) error {
 	request.ID = strings.TrimSpace(fiberContext.Params("id"))
 	if request.ID == "" {
 		return errors.New("id is required")

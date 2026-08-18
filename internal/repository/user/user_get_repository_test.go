@@ -10,8 +10,8 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 
+	domainuser "backend-challenge-golang-7solution/internal/domain/user"
 	repositorymodel "backend-challenge-golang-7solution/internal/repository/user/model"
-	servicemodel "backend-challenge-golang-7solution/internal/service/user/model"
 )
 
 type fakeUserDocumentFinder struct {
@@ -42,7 +42,7 @@ func TestNewGetUserRepository_NilCollection_ReturnsError(t *testing.T) {
 	require.Nil(t, repository)
 }
 
-func TestGetUserRepository_GetUserByID_FillsResponseFromDocument(t *testing.T) {
+func TestGetUserRepository_GetUserByID_FillsUserFromDocument(t *testing.T) {
 	objectID := bson.NewObjectID()
 	createdAt := time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC)
 	finder := &fakeUserDocumentFinder{
@@ -57,18 +57,16 @@ func TestGetUserRepository_GetUserByID_FillsResponseFromDocument(t *testing.T) {
 		userDocumentFinder: finder,
 	}
 
-	var response repositorymodel.GetUserByIDModel
-	err := repository.GetUserByID(context.Background(), &servicemodel.GetUserRequestModel{
-		ID: objectID.Hex(),
-	}, &response)
+	var user domainuser.User
+	err := repository.GetUserByID(context.Background(), objectID.Hex(), &user)
 
 	require.NoError(t, err)
 	require.True(t, finder.called)
 	require.Equal(t, bson.M{"_id": objectID}, finder.filter)
-	require.Equal(t, objectID.Hex(), response.ID)
-	require.Equal(t, "Alice", response.Name)
-	require.Equal(t, "alice@example.com", response.Email)
-	require.Equal(t, createdAt, response.CreatedAt)
+	require.Equal(t, objectID.Hex(), user.ID)
+	require.Equal(t, "Alice", user.Name)
+	require.Equal(t, "alice@example.com", user.Email)
+	require.Equal(t, createdAt, user.CreatedAt)
 }
 
 func TestGetUserRepository_GetUserByID_InvalidObjectID_ReturnsErrInvalidObjectID(t *testing.T) {
@@ -77,9 +75,7 @@ func TestGetUserRepository_GetUserByID_InvalidObjectID_ReturnsErrInvalidObjectID
 		userDocumentFinder: finder,
 	}
 
-	err := repository.GetUserByID(context.Background(), &servicemodel.GetUserRequestModel{
-		ID: "not-an-object-id",
-	}, &repositorymodel.GetUserByIDModel{})
+	err := repository.GetUserByID(context.Background(), "not-an-object-id", &domainuser.User{})
 
 	require.ErrorIs(t, err, ErrInvalidObjectID)
 	require.False(t, finder.called)
@@ -94,9 +90,7 @@ func TestGetUserRepository_GetUserByID_NotFound_ReturnsErrNotFound(t *testing.T)
 		userDocumentFinder: finder,
 	}
 
-	err := repository.GetUserByID(context.Background(), &servicemodel.GetUserRequestModel{
-		ID: objectID.Hex(),
-	}, &repositorymodel.GetUserByIDModel{})
+	err := repository.GetUserByID(context.Background(), objectID.Hex(), &domainuser.User{})
 
 	require.ErrorIs(t, err, ErrNotFound)
 	require.True(t, finder.called)
@@ -112,9 +106,7 @@ func TestGetUserRepository_GetUserByID_OtherFindError_ReturnsSameError(t *testin
 		userDocumentFinder: finder,
 	}
 
-	err := repository.GetUserByID(context.Background(), &servicemodel.GetUserRequestModel{
-		ID: objectID.Hex(),
-	}, &repositorymodel.GetUserByIDModel{})
+	err := repository.GetUserByID(context.Background(), objectID.Hex(), &domainuser.User{})
 
 	require.ErrorIs(t, err, findError)
 	require.False(t, errors.Is(err, ErrNotFound))

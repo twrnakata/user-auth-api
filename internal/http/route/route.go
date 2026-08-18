@@ -11,55 +11,71 @@ import (
 )
 
 type Route interface {
-	InitRoute(application *fiber.App)
-	InitRouteGroup(applicationGroup fiber.Router)
+	InitRoute(appGroup *fiber.App)
+	InitRouteGroup(appGroup fiber.Router)
 }
 
 type route struct {
 	AuthRegisterHandler *handler.AuthRegisterHandler
 	AuthLoginHandler    *handler.AuthLoginHandler
+	UserListHandler     *handler.UserListHandler
 	UserGetHandler      *handler.UserGetHandler
+	UserUpdateHandler   *handler.UserUpdateHandler
+	UserDeleteHandler   *handler.UserDeleteHandler
 	JWTService          *jwtpkg.JWTService
 }
 
-func NewRoute(registerService domainauth.RegisterUserService, loginService domainauth.LoginUserService, getUserService domainuser.GetUserService, jwtService *jwtpkg.JWTService) Route {
+func NewRoute(registerService domainauth.RegisterUserService, loginService domainauth.LoginUserService, listUserService domainuser.ListUserService, getUserService domainuser.GetUserService, updateUserService domainuser.UpdateUserService, deleteUserService domainuser.DeleteUserService, jwtService *jwtpkg.JWTService) Route {
 	authRegisterHandler := &handler.AuthRegisterHandler{
 		RegisterService: registerService,
 	}
 	authLoginHandler := &handler.AuthLoginHandler{
 		LoginService: loginService,
 	}
+	userListHandler := &handler.UserListHandler{
+		ListUserService: listUserService,
+	}
 	userGetHandler := &handler.UserGetHandler{
 		GetUserService: getUserService,
+	}
+	userUpdateHandler := &handler.UserUpdateHandler{
+		UpdateUserService: updateUserService,
+	}
+	userDeleteHandler := &handler.UserDeleteHandler{
+		DeleteUserService: deleteUserService,
 	}
 
 	return &route{
 		AuthRegisterHandler: authRegisterHandler,
 		AuthLoginHandler:    authLoginHandler,
+		UserListHandler:     userListHandler,
 		UserGetHandler:      userGetHandler,
+		UserUpdateHandler:   userUpdateHandler,
+		UserDeleteHandler:   userDeleteHandler,
 		JWTService:          jwtService,
 	}
 }
 
-func NewApp(registerService domainauth.RegisterUserService, loginService domainauth.LoginUserService, getUserService domainuser.GetUserService, jwtService *jwtpkg.JWTService) *fiber.App {
+func NewApp(registerService domainauth.RegisterUserService, loginService domainauth.LoginUserService, listUserService domainuser.ListUserService, getUserService domainuser.GetUserService, updateUserService domainuser.UpdateUserService, deleteUserService domainuser.DeleteUserService, jwtService *jwtpkg.JWTService) *fiber.App {
 	application := fiber.New()
-	newRoute := NewRoute(registerService, loginService, getUserService, jwtService)
+	newRoute := NewRoute(registerService, loginService, listUserService, getUserService, updateUserService, deleteUserService, jwtService)
 	newRoute.InitRoute(application)
 	return application
 }
 
-func (route *route) InitRoute(application *fiber.App) {
-	applicationGroup := application.Group("")
-	route.InitRouteGroup(applicationGroup)
+func (route *route) InitRoute(appGroup *fiber.App) {
+	appGroup.Use(middleware.Logging(nil))
+	appGroup.Use(middleware.Recover(nil))
+	route.InitRouteGroup(appGroup.Group(""))
 }
 
-func (route *route) InitRouteGroup(applicationGroup fiber.Router) {
-	route.healthGroup(applicationGroup)
+func (route *route) InitRouteGroup(appGroup fiber.Router) {
+	route.healthGroup(appGroup)
 
-	authGroup := applicationGroup.Group("/auth")
+	authGroup := appGroup.Group("/auth")
 	route.authGroup(authGroup)
 
-	usersGroup := applicationGroup.Group("/users", middleware.JWT(route.JWTService))
+	usersGroup := appGroup.Group("/users", middleware.JWT(route.JWTService))
 	route.usersGroup(usersGroup)
 }
 

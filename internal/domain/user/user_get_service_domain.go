@@ -3,8 +3,6 @@ package user
 import (
 	"context"
 	"errors"
-
-	servicemodel "backend-challenge-golang-7solution/internal/service/user/model"
 )
 
 var (
@@ -14,11 +12,11 @@ var (
 )
 
 type GetUserService interface {
-	GetByID(executionContext context.Context, request *servicemodel.GetUserRequestModel, response *servicemodel.GetUserResponseModel) error
+	GetByID(executionContext context.Context, userID string, user *User) error
 }
 
 type NotImplementedGetUserService struct{}
 
-func (service *NotImplementedGetUserService) GetByID(executionContext context.Context, request *servicemodel.GetUserRequestModel, response *servicemodel.GetUserResponseModel) error {
+func (service *NotImplementedGetUserService) GetByID(executionContext context.Context, userID string, user *User) error {
 	return ErrNotImplemented
 }

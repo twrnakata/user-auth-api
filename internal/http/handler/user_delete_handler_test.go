@@ -15,14 +15,14 @@ import (
 	"backend-challenge-golang-7solution/pkg/caller"
 )
 
-type fakeGetUserService struct {
+type fakeDeleteUserService struct {
 	called bool
 	gotID  string
 	user   *domainuser.User
 	err    error
 }
 
-func (service *fakeGetUserService) GetByID(executionContext context.Context, userID string, user *domainuser.User) error {
+func (service *fakeDeleteUserService) Delete(executionContext context.Context, userID string, user *domainuser.User) error {
 	service.called = true
 	service.gotID = userID
 	if user != nil && service.user != nil {
@@ -31,8 +31,8 @@ func (service *fakeGetUserService) GetByID(executionContext context.Context, use
 	return service.err
 }
 
-func TestUserGetHandler_ValidID_Returns200AndData(t *testing.T) {
-	fakeService := &fakeGetUserService{
+func TestUserDeleteHandler_ValidID_Returns200AndDeletedUser(t *testing.T) {
+	fakeService := &fakeDeleteUserService{
 		user: &domainuser.User{
 			ID:        "u-123",
 			Name:      "Alice",
@@ -40,12 +40,12 @@ func TestUserGetHandler_ValidID_Returns200AndData(t *testing.T) {
 			CreatedAt: time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC),
 		},
 	}
-	handler := &UserGetHandler{GetUserService: fakeService}
+	handler := &UserDeleteHandler{DeleteUserService: fakeService}
 
 	application := fiber.New()
-	application.Get("/users/:id", handler.GetByID)
+	application.Delete("/users/:id", handler.Delete)
 
-	request := httptest.NewRequest("GET", "/users/u-123", nil)
+	request := httptest.NewRequest("DELETE", "/users/u-123", nil)
 	response, err := application.Test(request, -1)
 	require.NoError(t, err)
 	require.Equal(t, fiber.StatusOK, response.StatusCode)
@@ -64,16 +64,16 @@ func TestUserGetHandler_ValidID_Returns200AndData(t *testing.T) {
 	require.Equal(t, "u-123", fakeService.gotID)
 }
 
-func TestUserGetHandler_NotFound_Returns404(t *testing.T) {
-	fakeService := &fakeGetUserService{
+func TestUserDeleteHandler_NotFound_Returns404(t *testing.T) {
+	fakeService := &fakeDeleteUserService{
 		err: domainuser.ErrUserNotFound,
 	}
-	handler := &UserGetHandler{GetUserService: fakeService}
+	handler := &UserDeleteHandler{DeleteUserService: fakeService}
 
 	application := fiber.New()
-	application.Get("/users/:id", handler.GetByID)
+	application.Delete("/users/:id", handler.Delete)
 
-	request := httptest.NewRequest("GET", "/users/missing", nil)
+	request := httptest.NewRequest("DELETE", "/users/missing", nil)
 	response, err := application.Test(request, -1)
 	require.NoError(t, err)
 	require.Equal(t, fiber.StatusNotFound, response.StatusCode)
@@ -84,16 +84,16 @@ func TestUserGetHandler_NotFound_Returns404(t *testing.T) {
 	require.Equal(t, caller.CodeNotFound, int(responseEnvelope["code"].(float64)))
 }
 
-func TestUserGetHandler_InvalidUserID_Returns404(t *testing.T) {
-	fakeService := &fakeGetUserService{
+func TestUserDeleteHandler_InvalidUserID_Returns404(t *testing.T) {
+	fakeService := &fakeDeleteUserService{
 		err: domainuser.ErrInvalidUserID,
 	}
-	handler := &UserGetHandler{GetUserService: fakeService}
+	handler := &UserDeleteHandler{DeleteUserService: fakeService}
 
 	application := fiber.New()
-	application.Get("/users/:id", handler.GetByID)
+	application.Delete("/users/:id", handler.Delete)
 
-	request := httptest.NewRequest("GET", "/users/not-an-object-id", nil)
+	request := httptest.NewRequest("DELETE", "/users/not-an-object-id", nil)
 	response, err := application.Test(request, -1)
 	require.NoError(t, err)
 	require.Equal(t, fiber.StatusNotFound, response.StatusCode)

@@ -7,13 +7,14 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 
+	domainuser "backend-challenge-golang-7solution/internal/domain/user"
 	repositorymodel "backend-challenge-golang-7solution/internal/repository/user/model"
-	servicemodel "backend-challenge-golang-7solution/internal/service/user/model"
 )
 
 var (
 	ErrNotFound        = errors.New("not found")
 	ErrInvalidObjectID = errors.New("invalid object id")
+	ErrDuplicateKey    = errors.New("duplicate key")
 )
 
 type userDocumentFinder interface {
@@ -46,12 +47,15 @@ func NewGetUserRepository(userCollection *mongo.Collection) (*GetUserRepository,
 	}, nil
 }
 
-func (repository *GetUserRepository) GetUserByID(executionContext context.Context, request *servicemodel.GetUserRequestModel, response *repositorymodel.GetUserByIDModel) error {
+func (repository *GetUserRepository) GetUserByID(executionContext context.Context, userID string, user *domainuser.User) error {
 	if repository.userDocumentFinder == nil {
 		return errors.New("get user repository not configured")
 	}
+	if user == nil {
+		return errors.New("user response is nil")
+	}
 
-	objectID, err := bson.ObjectIDFromHex(request.ID)
+	objectID, err := bson.ObjectIDFromHex(userID)
 	if err != nil {
 		return ErrInvalidObjectID
 	}
@@ -65,9 +69,11 @@ func (repository *GetUserRepository) GetUserByID(executionContext context.Contex
 		return err
 	}
 
-	response.ID = document.ID.Hex()
-	response.Name = document.Name
-	response.Email = document.Email
-	response.CreatedAt = document.CreatedAt
+	*user = domainuser.User{
+		ID:        document.ID.Hex(),
+		Name:      document.Name,
+		Email:     document.Email,
+		CreatedAt: document.CreatedAt,
+	}
 	return nil
 }
