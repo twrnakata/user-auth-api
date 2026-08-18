@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	repositoryauth "backend-challenge-golang/internal/repository/auth"
 	repositorymodel "backend-challenge-golang/internal/repository/auth/model"
 	servicemodel "backend-challenge-golang/internal/service/auth/model"
 	"golang.org/x/crypto/bcrypt"
@@ -14,12 +15,12 @@ import (
 // RegisterUserService is the application-layer implementation of the domain port.
 // It contains the register business rules (password hashing, calling repository).
 type RegisterUserService struct {
-	Repo domainauth.RegisterUserRepository
+	Repository domainauth.RegisterUserRepository
 }
 
 func (service *RegisterUserService) Register(executionContext context.Context, request *servicemodel.RegisterUserRequest, response *servicemodel.RegisterUserResponse) error {
-	if service.Repo == nil {
-		return errors.New("register repo not configured")
+	if service.Repository == nil {
+		return errors.New("register repository not configured")
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
@@ -34,8 +35,11 @@ func (service *RegisterUserService) Register(executionContext context.Context, r
 	}
 
 	createResp := &repositorymodel.CreateRegisterUserResponse{}
-	err = service.Repo.Create(executionContext, createRequest, createResp)
+	err = service.Repository.CreateRegisterUser(executionContext, createRequest, createResp)
 	if err != nil {
+		if errors.Is(err, repositoryauth.ErrDuplicateKey) {
+			return domainauth.ErrEmailAlreadyExists
+		}
 		return err
 	}
 

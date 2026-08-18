@@ -7,7 +7,10 @@ import (
 	servicemodel "backend-challenge-golang/internal/service/auth/model"
 )
 
-var ErrNotImplemented = errors.New("not implemented")
+var (
+	ErrNotImplemented     = errors.New("not implemented")
+	ErrEmailAlreadyExists = errors.New("email already exists")
+)
 
 // RegisterUserService is a port for the Register use case.
 // Handler depends on this interface to keep TDD simple.

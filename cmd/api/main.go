@@ -6,9 +6,14 @@ import (
 
 	domainauth "backend-challenge-golang/internal/domain/auth"
 	httproute "backend-challenge-golang/internal/http/route"
+	"backend-challenge-golang/pkg/datetime"
 )
 
 func main() {
+	if err := datetime.SetDefaultTimeZone(datetime.TimeZoneAsiaBangkok); err != nil {
+		log.Fatal(err)
+	}
+
 	// Minimal bootstrap: Step 1 focuses on wiring + contracts.
 	// Business implementations (MongoDB/JWT) will come in later steps.
 	registerService := &domainauth.NotImplementedRegisterUserService{}

@@ -7,6 +7,6 @@ import (
 )
 
 type AuthLoginRepository interface {
-	GetByEmail(executionContext context.Context, request *repositorymodel.AuthLoginRepositoryRequest, response *repositorymodel.AuthLoginRepositoryResponse) error
+	GetLoginUserByEmail(executionContext context.Context, request *repositorymodel.AuthLoginRepositoryRequest, response *repositorymodel.AuthLoginRepositoryResponse) error
 }
 

@@ -2,9 +2,12 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
+	domainauth "backend-challenge-golang/internal/domain/auth"
+	repositoryauth "backend-challenge-golang/internal/repository/auth"
 	repositorymodel "backend-challenge-golang/internal/repository/auth/model"
 	servicemodel "backend-challenge-golang/internal/service/auth/model"
 	"golang.org/x/crypto/bcrypt"
@@ -17,7 +20,7 @@ type fakeRegisterUserRepository struct {
 	err      error
 }
 
-func (repository *fakeRegisterUserRepository) Create(executionContext context.Context, request *repositorymodel.CreateRegisterUserRequest, response *repositorymodel.CreateRegisterUserResponse) error {
+func (repository *fakeRegisterUserRepository) CreateRegisterUser(executionContext context.Context, request *repositorymodel.CreateRegisterUserRequest, response *repositorymodel.CreateRegisterUserResponse) error {
 	repository.called = true
 	if request != nil {
 		repository.gotReq = *request
@@ -39,7 +42,7 @@ func TestRegisterUserService_HashesPasswordAndCallsRepository(t *testing.T) {
 	}
 
 	service := &RegisterUserService{
-		Repo: repository,
+		Repository: repository,
 	}
 
 	var response servicemodel.RegisterUserResponse
@@ -53,7 +56,7 @@ func TestRegisterUserService_HashesPasswordAndCallsRepository(t *testing.T) {
 	}
 
 	if !repository.called {
-		t.Fatalf("expected repository Create to be called")
+		t.Fatalf("expected repository CreateRegisterUser to be called")
 	}
 	if repository.gotReq.PasswordHash == "" {
 		t.Fatalf("expected password hash to be set")
@@ -67,5 +70,24 @@ func TestRegisterUserService_HashesPasswordAndCallsRepository(t *testing.T) {
 
 	if response.ID != "u-1" || response.Name != "Alice" || response.Email != "alice@example.com" {
 		t.Fatalf("unexpected response: %#v", response)
+	}
+}
+
+func TestRegisterUserService_DuplicateKey_ReturnsEmailAlreadyExists(t *testing.T) {
+	repository := &fakeRegisterUserRepository{
+		err: repositoryauth.ErrDuplicateKey,
+	}
+
+	service := &RegisterUserService{
+		Repository: repository,
+	}
+
+	err := service.Register(context.Background(), &servicemodel.RegisterUserRequest{
+		Name:     "Alice",
+		Email:    "alice@example.com",
+		Password: "secret",
+	}, &servicemodel.RegisterUserResponse{})
+	if !errors.Is(err, domainauth.ErrEmailAlreadyExists) {
+		t.Fatalf("expected ErrEmailAlreadyExists, got: %v", err)
 	}
 }

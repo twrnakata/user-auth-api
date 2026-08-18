@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"backend-challenge-golang/pkg/datetime"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -29,7 +30,7 @@ type ResponseModel struct {
 }
 
 func now() string {
-	return time.Now().Format(time.RFC3339)
+	return datetime.GetCurrentDateTimeNow().Format(time.RFC3339)
 }
 
 func Success(c *fiber.Ctx, data any) error {

@@ -2,8 +2,11 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"testing"
 
+	domainauth "backend-challenge-golang/internal/domain/auth"
+	repositoryauth "backend-challenge-golang/internal/repository/auth"
 	repositorymodel "backend-challenge-golang/internal/repository/auth/model"
 	servicemodel "backend-challenge-golang/internal/service/auth/model"
 	"golang.org/x/crypto/bcrypt"
@@ -16,7 +19,7 @@ type fakeAuthLoginRepository struct {
 	err      error
 }
 
-func (repository *fakeAuthLoginRepository) GetByEmail(executionContext context.Context, request *repositorymodel.AuthLoginRepositoryRequest, response *repositorymodel.AuthLoginRepositoryResponse) error {
+func (repository *fakeAuthLoginRepository) GetLoginUserByEmail(executionContext context.Context, request *repositorymodel.AuthLoginRepositoryRequest, response *repositorymodel.AuthLoginRepositoryResponse) error {
 	repository.called = true
 
 	if request != nil {
@@ -73,6 +76,24 @@ func TestAuthLoginService_Login_FillsResponseFromRepository(t *testing.T) {
 
 	if response.Token != "mock-token" || response.ID != "u-1" || response.Name != "Alice" {
 		t.Fatalf("unexpected response: %#v", response)
+	}
+}
+
+func TestAuthLoginService_Login_NotFound_ReturnsErrUserNotFound(t *testing.T) {
+	repository := &fakeAuthLoginRepository{
+		err: repositoryauth.ErrNotFound,
+	}
+
+	service := &AuthLoginService{
+		Repository: repository,
+	}
+
+	err := service.Login(context.Background(), &servicemodel.LoginUserRequest{
+		Email:    "unknown@example.com",
+		Password: "secret",
+	}, &servicemodel.LoginUserResponse{})
+	if !errors.Is(err, domainauth.ErrUserNotFound) {
+		t.Fatalf("expected ErrUserNotFound, got: %v", err)
 	}
 }
 

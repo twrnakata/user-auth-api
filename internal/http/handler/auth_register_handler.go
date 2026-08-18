@@ -38,6 +38,9 @@ func (handler *AuthRegisterHandler) Register(c *fiber.Ctx) error {
 		Password: request.Password,
 	}, &response)
 	if err != nil {
+		if errors.Is(err, domainauth.ErrEmailAlreadyExists) {
+			return caller.Conflict(c, err.Error())
+		}
 		return caller.InternalServerError(c, err.Error())
 	}
 

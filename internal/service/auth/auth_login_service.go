@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	repositoryauth "backend-challenge-golang/internal/repository/auth"
 	repositorymodel "backend-challenge-golang/internal/repository/auth/model"
 	servicemodel "backend-challenge-golang/internal/service/auth/model"
 	"golang.org/x/crypto/bcrypt"
@@ -26,12 +27,11 @@ func (service *AuthLoginService) Login(executionContext context.Context, request
 	}
 
 	repositoryResponse := &repositorymodel.AuthLoginRepositoryResponse{}
-	if err := service.Repository.GetByEmail(executionContext, repositoryRequest, repositoryResponse); err != nil {
+	if err := service.Repository.GetLoginUserByEmail(executionContext, repositoryRequest, repositoryResponse); err != nil {
+		if errors.Is(err, repositoryauth.ErrNotFound) {
+			return domainauth.ErrUserNotFound
+		}
 		return err
-	}
-
-	if repositoryResponse.Email == "" || repositoryResponse.PasswordHash == "" {
-		return domainauth.ErrUserNotFound
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(repositoryResponse.PasswordHash), []byte(request.Password)); err != nil {

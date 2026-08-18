@@ -13,6 +13,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/require"
 
+	domainauth "backend-challenge-golang/internal/domain/auth"
 	"backend-challenge-golang/pkg/caller"
 )
 
@@ -96,4 +97,26 @@ func TestAuthRegisterHandler_ValidBody_Returns201AndData(t *testing.T) {
 	require.Equal(t, "Alice", fakeService.gotReq.Name)
 	require.Equal(t, "alice@example.com", fakeService.gotReq.Email)
 	require.Equal(t, "secret", fakeService.gotReq.Password)
+}
+
+func TestAuthRegisterHandler_EmailAlreadyExists_Returns409(t *testing.T) {
+	fakeService := &fakeRegisterService{
+		err: domainauth.ErrEmailAlreadyExists,
+	}
+	handler := &AuthRegisterHandler{RegisterService: fakeService}
+
+	application := fiber.New()
+	application.Post("/auth/register", handler.Register)
+
+	body := `{"name":"Alice","email":"alice@example.com","password":"secret"}`
+	request := httptest.NewRequest("POST", "/auth/register", bytes.NewBufferString(body))
+	request.Header.Set("Content-Type", "application/json")
+	response, err := application.Test(request, -1)
+	require.NoError(t, err)
+	require.Equal(t, fiber.StatusConflict, response.StatusCode)
+
+	responseBodyBytes, _ := io.ReadAll(response.Body)
+	var responseEnvelope map[string]any
+	require.NoError(t, json.Unmarshal(responseBodyBytes, &responseEnvelope))
+	require.Equal(t, caller.CodeConflict, int(responseEnvelope["code"].(float64)))
 }
