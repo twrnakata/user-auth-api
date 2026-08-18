@@ -1,0 +1,24 @@
+package auth
+
+import (
+	"context"
+	"errors"
+
+	servicemodel "backend-challenge-golang/internal/service/auth/model"
+)
+
+var (
+	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrUserNotFound       = errors.New("user not found")
+)
+
+// LoginUserService is a port for the login use case.
+type LoginUserService interface {
+	Login(executionContext context.Context, request *servicemodel.LoginUserRequest, response *servicemodel.LoginUserResponse) error
+}
+
+type NotImplementedLoginUserService struct{}
+
+func (service *NotImplementedLoginUserService) Login(executionContext context.Context, request *servicemodel.LoginUserRequest, response *servicemodel.LoginUserResponse) error {
+	return ErrNotImplemented
+}

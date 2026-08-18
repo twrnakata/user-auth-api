@@ -4,16 +4,17 @@ import (
 	"log"
 	"os"
 
-	"backend-challenge-golang/internal/application/user"
-	"backend-challenge-golang/internal/interfaces/http"
+	domainauth "backend-challenge-golang/internal/domain/auth"
+	httproute "backend-challenge-golang/internal/http/route"
 )
 
 func main() {
 	// Minimal bootstrap: Step 1 focuses on wiring + contracts.
 	// Business implementations (MongoDB/JWT) will come in later steps.
-	registerSvc := &user.NotImplementedRegisterUserService{}
+	registerService := &domainauth.NotImplementedRegisterUserService{}
+	loginService := &domainauth.NotImplementedLoginUserService{}
 
-	app := httpapi.NewApp(registerSvc)
+	application := httproute.NewApp(registerService, loginService)
 
 	addr := os.Getenv("PORT")
 	if addr == "" {
@@ -21,8 +22,7 @@ func main() {
 	}
 
 	log.Printf("listening on :%s", addr)
-	if err := app.Listen(":" + addr); err != nil {
+	if err := application.Listen(":" + addr); err != nil {
 		log.Fatal(err)
 	}
 }
-
