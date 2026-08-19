@@ -3,6 +3,10 @@ package main
 import (
 	"context"
 	"log"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 
 	httproute "github.com/twrnakata/user-auth-api/internal/http/route"
 	"github.com/twrnakata/user-auth-api/internal/job"
@@ -26,17 +30,12 @@ func main() {
 	}
 
 	executionContext := context.Background()
-	mongoClient, err := mongodb.Connect(executionContext, configuration.Env.MONGO_URI)
+	database, err := mongodb.Connect(executionContext, configuration.Env.MONGO_URI)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer func() {
-		if disconnectErr := mongoClient.Disconnect(executionContext); disconnectErr != nil {
-			log.Printf("mongo disconnect error: %v", disconnectErr)
-		}
-	}()
 
-	userCollection := mongodb.UserCollection(mongoClient, configuration.Env.MONGO_DATABASE)
+	userCollection := mongodb.UserCollection(database, configuration.Env.MONGO_DATABASE)
 
 	registerRepository, err := repositoryauth.NewAuthRegisterRepository(executionContext, userCollection)
 	if err != nil {
@@ -108,13 +107,42 @@ func main() {
 	}
 
 	jobContext, cancelJob := context.WithCancel(context.Background())
-	defer cancelJob()
-	go userCountJob.Run(jobContext)
+	jobDone := &sync.WaitGroup{}
+	jobDone.Add(1)
+	go func() {
+		defer jobDone.Done()
+		userCountJob.Run(jobContext)
+	}()
 
 	application := httproute.NewApp(registerService, loginService, listUserService, getUserService, updateUserService, deleteUserService, jwtService)
 
+	listenErr := make(chan error, 1)
+	go func() {
+		listenErr <- application.Listen(":" + configuration.Env.PORT)
+	}()
+
+	signalChannel := make(chan os.Signal, 1)
+	signal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM)
+
 	log.Printf("listening on :%s", configuration.Env.PORT)
-	if err := application.Listen(":" + configuration.Env.PORT); err != nil {
-		log.Fatal(err)
+
+	select {
+	case err := <-listenErr:
+		cancelJob()
+		jobDone.Wait()
+		if disconnectErr := database.Disconnect(executionContext); disconnectErr != nil {
+			log.Printf("mongo disconnect error: %v", disconnectErr)
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+	case <-signalChannel:
+		log.Printf("shutdown signal received")
+		if err := gracefulShutdown(executionContext, application, cancelJob, jobDone, database, nil); err != nil {
+			log.Printf("graceful shutdown error: %v", err)
+		}
+		if err := <-listenErr; err != nil {
+			log.Printf("listen error: %v", err)
+		}
 	}
 }

@@ -2,7 +2,10 @@
 
 Golang User Management API for the [7Solutions backend challenge](https://github.com/7-solutions/backend-challenge): MongoDB persistence, JWT HS256 auth, and a background job that logs the user count.
 
-Lottery search is a **design document only** (no code). That write-up is not in this repo yet.
+Lottery search is **design only** (no code):
+
+- English: [`docs/lottery-search.md`](docs/lottery-search.md)
+- Thai: [`docs/lottery-search.th.md`](docs/lottery-search.th.md)
 
 ## Stack
 
@@ -232,7 +235,8 @@ Unexpected 500s log the real error with `event: internalError` and `requestId`. 
 - **PUT is a patch.** Empty string after trim is omitted; only non-empty `name` / `email` are `$set`.
 - **No owner ACL.** JWT proves identity; any authenticated caller can list/update/delete any user. The challenge does not require ownership.
 - **Hexagonal-ish layout:** domain ports, service, Mongo adapters, HTTP handlers. Handlers validate; services trust that input (except nil deps / nil output pointers).
-- **Email format** is checked on register, login, and update (when email is sent) with the same pattern as iCRM (`test@google.com`). Graceful shutdown and gRPC are not implemented yet.
+- **Email format** is checked on register, login, and update (when email is sent) with the same pattern as iCRM (`test@google.com`).
+- **Graceful shutdown:** `SIGINT` / `SIGTERM` stop HTTP first (`ShutdownWithTimeout` 10s is a maximum wait for in-flight requests, not a sleep; idle servers return immediately). Then the user-count job, then Mongo. `ReadTimeout` 30s only limits idle keepalive connections. gRPC is not implemented.
 
 ## Layout
 
@@ -246,6 +250,8 @@ internal/middleware/     logging, recover, JWT
 internal/job/            user-count ticker
 pkg/                     JWT, Mongo, config, envelope, shared errors
 docs/postman/            collection and local environment
+docs/lottery-search.md     lottery design (English)
+docs/lottery-search.th.md  lottery design (Thai)
 ```
 
 ## Postman

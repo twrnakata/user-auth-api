@@ -9,9 +9,9 @@ import (
 	"testing"
 	"time"
 
-	servicemodel "github.com/twrnakata/user-auth-api/internal/service/auth/model"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/require"
+	servicemodel "github.com/twrnakata/user-auth-api/internal/service/auth/model"
 
 	domainuser "github.com/twrnakata/user-auth-api/internal/domain/user"
 	"github.com/twrnakata/user-auth-api/pkg/caller"
@@ -192,4 +192,21 @@ func TestNewApp_RoutesAreWired(t *testing.T) {
 	deleteUserResponse, err := application.Test(deleteUserRequest, -1)
 	require.NoError(t, err)
 	require.Equal(t, fiber.StatusOK, deleteUserResponse.StatusCode)
+}
+
+func TestNewApp_SetsReadTimeout(t *testing.T) {
+	jwtService, err := jwtpkg.NewJWTService("test-secret", jwtpkg.DefaultExpireDuration)
+	require.NoError(t, err)
+
+	application := NewApp(
+		&fakeRegisterService{},
+		&fakeLoginService{},
+		&fakeListUserService{},
+		&fakeGetUserService{},
+		&fakeUpdateUserService{},
+		&fakeDeleteUserService{},
+		jwtService,
+	)
+
+	require.Equal(t, fiberReadTimeout, application.Config().ReadTimeout)
 }

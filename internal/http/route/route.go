@@ -1,6 +1,8 @@
 package route
 
 import (
+	"time"
+
 	domainauth "github.com/twrnakata/user-auth-api/internal/domain/auth"
 	domainuser "github.com/twrnakata/user-auth-api/internal/domain/user"
 	"github.com/twrnakata/user-auth-api/internal/http/handler"
@@ -56,8 +58,12 @@ func NewRoute(registerService domainauth.RegisterUserService, loginService domai
 	}
 }
 
+const fiberReadTimeout = 30 * time.Second
+
 func NewApp(registerService domainauth.RegisterUserService, loginService domainauth.LoginUserService, listUserService domainuser.ListUserService, getUserService domainuser.GetUserService, updateUserService domainuser.UpdateUserService, deleteUserService domainuser.DeleteUserService, jwtService *jwtpkg.JWTService) *fiber.App {
-	application := fiber.New()
+	application := fiber.New(fiber.Config{
+		ReadTimeout: fiberReadTimeout,
+	})
 	newRoute := NewRoute(registerService, loginService, listUserService, getUserService, updateUserService, deleteUserService, jwtService)
 	newRoute.InitRoute(application)
 	return application
