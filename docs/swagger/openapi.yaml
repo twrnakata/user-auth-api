@@ -1,0 +1,547 @@
+openapi: 3.0.3
+info:
+  title: user-auth-api
+  description: |
+    User management API for the 7Solutions backend challenge.
+    Envelope: `{ code, message, data?, errors?, serverTime }`.
+    `/auth/*` is public. `/users/*` needs `Authorization: Bearer <token>`.
+  version: 1.0.0
+servers:
+  - url: /
+  - url: http://localhost:8080
+tags:
+  - name: Health
+  - name: Auth
+  - name: Users
+paths:
+  /health:
+    get:
+      tags: [Health]
+      operationId: healthCheck
+      summary: Health check
+      responses:
+        "200":
+          description: Service is up
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    type: string
+                    example: ok
+  /auth/register:
+    post:
+      tags: [Auth]
+      operationId: registerUser
+      summary: Register user
+      description: Creates a user. Email must be unique. Password is stored as bcrypt hash.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+            examples:
+              Success:
+                value:
+                  name: Mint Kittisak
+                  email: mint.kitt16@gmail.com
+                  password: rainyBus3
+              Missing fields:
+                value:
+                  name: Mint Kittisak
+              Bad email:
+                value:
+                  name: Mint Kittisak
+                  email: mint-at-gmail
+                  password: rainyBus3
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterSuccessEnvelope"
+              examples:
+                Success:
+                  value:
+                    code: 0
+                    message: success
+                    data:
+                      id: "68a4f2c19b7e3d0a4c8f2e11"
+                      name: Mint Kittisak
+                      email: mint.kitt16@gmail.com
+                      createdAt: "2026-08-20 20:51:03"
+                    serverTime: "2026-08-20T13:51:03Z"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+              examples:
+                Required:
+                  value:
+                    code: 400
+                    message: invalid parameter
+                    errors: name, email, password are required
+                    serverTime: "2026-08-20T13:51:03Z"
+                Bad email:
+                  value:
+                    code: 400
+                    message: invalid parameter
+                    errors: invalid email format
+                    serverTime: "2026-08-20T13:51:03Z"
+        "409":
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+              examples:
+                Conflict:
+                  value:
+                    code: 409
+                    message: conflict
+                    errors: email already exists
+                    serverTime: "2026-08-20T13:51:03Z"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  /auth/login:
+    post:
+      tags: [Auth]
+      operationId: loginUser
+      summary: Login
+      description: Returns a JWT (HS256, 7 days). Unknown email and wrong password both return 401.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            examples:
+              Success:
+                value:
+                  email: mint.kitt16@gmail.com
+                  password: rainyBus3
+              Wrong password:
+                value:
+                  email: mint.kitt16@gmail.com
+                  password: notThisOne
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginSuccessEnvelope"
+              examples:
+                Success:
+                  value:
+                    code: 0
+                    message: success
+                    data:
+                      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.example
+                      user:
+                        id: "68a4f2c19b7e3d0a4c8f2e11"
+                        name: Mint Kittisak
+                    serverTime: "2026-08-20T13:52:10Z"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+              examples:
+                Required:
+                  value:
+                    code: 400
+                    message: invalid parameter
+                    errors: email and password are required
+                    serverTime: "2026-08-20T13:52:10Z"
+        "401":
+          description: Bad credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+              examples:
+                Unauthorized:
+                  value:
+                    code: 401
+                    message: unauthorized
+                    errors: invalid credentials
+                    serverTime: "2026-08-20T13:52:10Z"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  /users:
+    get:
+      tags: [Users]
+      operationId: listUsers
+      summary: List users
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: User list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListUsersSuccessEnvelope"
+              examples:
+                Success:
+                  value:
+                    code: 0
+                    message: success
+                    data:
+                      users:
+                        - id: "68a4f2c19b7e3d0a4c8f2e11"
+                          name: Mint Kittisak
+                          email: mint.kitt16@gmail.com
+                          createdAt: "2026-08-20 20:51:03"
+                        - id: "68a4f2c19b7e3d0a4c8f2e22"
+                          name: Mew Chaiyaporn
+                          email: mew.chai66@gmail.com
+                          createdAt: "2026-08-19 11:08:44"
+                    serverTime: "2026-08-20T13:53:00Z"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalError"
+  /users/{id}:
+    get:
+      tags: [Users]
+      operationId: getUser
+      summary: Get user by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserID"
+      responses:
+        "200":
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserSuccessEnvelope"
+              examples:
+                Success:
+                  value:
+                    code: 0
+                    message: success
+                    data:
+                      id: "68a4f2c19b7e3d0a4c8f2e11"
+                      name: Mint Kittisak
+                      email: mint.kitt16@gmail.com
+                      createdAt: "2026-08-20 20:51:03"
+                    serverTime: "2026-08-20T13:53:20Z"
+        "400":
+          $ref: "#/components/responses/InvalidUserID"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/UserNotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    put:
+      tags: [Users]
+      operationId: updateUser
+      summary: Update user name and/or email
+      description: Patch-style. Send at least one of name or email. Empty strings after trim are ignored.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserID"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+            examples:
+              Rename:
+                value:
+                  name: Fah Anong
+              Change email:
+                value:
+                  email: mint.kitt16@gmail.com
+              Empty body:
+                value: {}
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserSuccessEnvelope"
+              examples:
+                Success:
+                  value:
+                    code: 0
+                    message: success
+                    data:
+                      id: "68a4f2c19b7e3d0a4c8f2e11"
+                      name: Fah Anong
+                      email: mint.kitt16@gmail.com
+                      createdAt: "2026-08-20 20:51:03"
+                    serverTime: "2026-08-20T13:54:01Z"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+              examples:
+                Need field:
+                  value:
+                    code: 400
+                    message: invalid parameter
+                    errors: name or email is required
+                    serverTime: "2026-08-20T13:54:01Z"
+                Bad id:
+                  value:
+                    code: 400
+                    message: invalid parameter
+                    errors: invalid user id
+                    serverTime: "2026-08-20T13:54:01Z"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/UserNotFound"
+        "409":
+          description: Email taken
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+              examples:
+                Conflict:
+                  value:
+                    code: 409
+                    message: conflict
+                    errors: email already exists
+                    serverTime: "2026-08-20T13:54:01Z"
+        "500":
+          $ref: "#/components/responses/InternalError"
+    delete:
+      tags: [Users]
+      operationId: deleteUser
+      summary: Delete user
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserID"
+      responses:
+        "200":
+          description: Deleted; body is the removed user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserSuccessEnvelope"
+              examples:
+                Success:
+                  value:
+                    code: 0
+                    message: success
+                    data:
+                      id: "68a4f2c19b7e3d0a4c8f2e11"
+                      name: Fah Anong
+                      email: mint.kitt16@gmail.com
+                      createdAt: "2026-08-20 20:51:03"
+                    serverTime: "2026-08-20T13:55:00Z"
+        "400":
+          $ref: "#/components/responses/InvalidUserID"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/UserNotFound"
+        "500":
+          $ref: "#/components/responses/InternalError"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Paste the token from POST /auth/login (data.token).
+  parameters:
+    UserID:
+      name: id
+      in: path
+      required: true
+      description: MongoDB ObjectID (24 hex chars)
+      schema:
+        type: string
+        pattern: "^[a-fA-F0-9]{24}$"
+      example: "68a4f2c19b7e3d0a4c8f2e11"
+  responses:
+    Unauthorized:
+      description: Missing or invalid JWT
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+          examples:
+            Missing header:
+              value:
+                code: 401
+                message: unauthorized
+                errors: missing authorization header
+                serverTime: "2026-08-20T13:53:00Z"
+    InvalidUserID:
+      description: Path id is not a valid ObjectID
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+          examples:
+            Bad id:
+              value:
+                code: 400
+                message: invalid parameter
+                errors: invalid user id
+                serverTime: "2026-08-20T13:53:20Z"
+    UserNotFound:
+      description: No user for this id
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+          examples:
+            Not found:
+              value:
+                code: 404
+                message: not found
+                errors: user not found
+                serverTime: "2026-08-20T13:53:20Z"
+    InternalError:
+      description: Unexpected server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+          examples:
+            Internal:
+              value:
+                code: 500
+                message: internal server error
+                errors: internal server error
+                serverTime: "2026-08-20T13:53:20Z"
+  schemas:
+    EnvelopeBase:
+      type: object
+      required: [code, message, serverTime]
+      properties:
+        code:
+          type: integer
+          description: Application code (0 = success). Not the HTTP status.
+        message:
+          type: string
+        data:
+          nullable: true
+        errors:
+          nullable: true
+        serverTime:
+          type: string
+          format: date-time
+    RegisterRequest:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+          example: Mint Kittisak
+        email:
+          type: string
+          format: email
+          example: mint.kitt16@gmail.com
+        password:
+          type: string
+          format: password
+          example: rainyBus3
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: mint.kitt16@gmail.com
+        password:
+          type: string
+          format: password
+          example: rainyBus3
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Fah Anong
+        email:
+          type: string
+          format: email
+          example: mint.kitt16@gmail.com
+    User:
+      type: object
+      required: [id, name, email, createdAt]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        createdAt:
+          type: string
+          description: Bangkok local time `2006-01-02 15:04:05`
+    RegisterSuccessEnvelope:
+      allOf:
+        - $ref: "#/components/schemas/EnvelopeBase"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/User"
+    LoginSuccessEnvelope:
+      allOf:
+        - $ref: "#/components/schemas/EnvelopeBase"
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [token, user]
+              properties:
+                token:
+                  type: string
+                user:
+                  type: object
+                  required: [id, name]
+                  properties:
+                    id:
+                      type: string
+                    name:
+                      type: string
+    ListUsersSuccessEnvelope:
+      allOf:
+        - $ref: "#/components/schemas/EnvelopeBase"
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [users]
+              properties:
+                users:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/User"
+    UserSuccessEnvelope:
+      allOf:
+        - $ref: "#/components/schemas/EnvelopeBase"
+        - type: object
+          properties:
+            data:
+              $ref: "#/components/schemas/User"
+    ErrorEnvelope:
+      allOf:
+        - $ref: "#/components/schemas/EnvelopeBase"

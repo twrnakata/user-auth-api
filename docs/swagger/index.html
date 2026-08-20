@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>user-auth-api · Swagger UI</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.32.14/swagger-ui.css" />
+    <style>
+      .swagger-ui .live-responses-table.prismo-response-ok,
+      .swagger-ui .live-responses-table.prismo-response-fail {
+        border: 0;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .swagger-ui .live-responses-table.prismo-response-ok {
+        background: rgba(73, 204, 144, 0.18);
+      }
+      .swagger-ui .live-responses-table.prismo-response-fail {
+        background: rgba(249, 62, 62, 0.18);
+      }
+      .swagger-ui .live-responses-table.prismo-response-ok > tbody > tr > td,
+      .swagger-ui .live-responses-table.prismo-response-fail > tbody > tr > td {
+        background: transparent;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="swagger-ui"></div>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.32.14/swagger-ui-bundle.js" crossorigin></script>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.32.14/swagger-ui-standalone-preset.js" crossorigin></script>
+    <script>
+      let lastRequestMethod = "";
+
+      function pathMatchesTemplate(template, pathname) {
+        const pattern = "^" + template.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\\\{[^}]+\\\}/g, "[^/]+") + "$";
+        return new RegExp(pattern).test(pathname);
+      }
+
+      function findOpblock(method, url) {
+        let pathname = "";
+        try {
+          pathname = new URL(url, window.location.origin).pathname;
+        } catch {
+          return null;
+        }
+        const wantMethod = String(method || "").toUpperCase();
+        let match = null;
+        document.querySelectorAll(".opblock").forEach((block) => {
+          const blockMethod = block.querySelector(".opblock-summary-method")?.textContent?.trim().toUpperCase();
+          if (blockMethod !== wantMethod) {
+            return;
+          }
+          const template = block.querySelector(".opblock-summary-path")?.textContent?.trim() || "";
+          if (pathMatchesTemplate(template, pathname)) {
+            match = block;
+          }
+        });
+        return match;
+      }
+
+      function paintOpblockTable(block, status) {
+        const table = block.querySelector(".live-responses-table");
+        if (!table || !Number.isFinite(status) || status < 100) {
+          return;
+        }
+        table.classList.remove("prismo-response-ok", "prismo-response-fail");
+        table.classList.add(status >= 200 && status < 300 ? "prismo-response-ok" : "prismo-response-fail");
+      }
+
+      function paintLiveResponse(method, url, statusFromInterceptor) {
+        window.setTimeout(() => {
+          const block = findOpblock(method, url);
+          if (!block) {
+            return;
+          }
+          const fromDom = Number.parseInt(
+            block.querySelector(".live-responses-table .response-col_status")?.textContent ?? "",
+            10
+          );
+          const status = Number.isFinite(fromDom) ? fromDom : Number(statusFromInterceptor);
+          paintOpblockTable(block, status);
+        }, 100);
+      }
+
+      window.onload = () => {
+        window.ui = SwaggerUIBundle({
+          url: "/swagger/openapi.yaml",
+          dom_id: "#swagger-ui",
+          presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
+          layout: "StandaloneLayout",
+          validatorUrl: null,
+          persistAuthorization: true,
+          requestInterceptor: (request) => {
+            lastRequestMethod = request.method || "";
+            return request;
+          },
+          responseInterceptor: (response) => {
+            paintLiveResponse(lastRequestMethod, response && response.url, response && response.status);
+            return response;
+          }
+        });
+      };
+    </script>
+  </body>
+</html>

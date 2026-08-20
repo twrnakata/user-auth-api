@@ -25,27 +25,37 @@ cp .env.example .env
 
 `.env` is used by Compose. Keep `MONGO_USERNAME` / `MONGO_PASSWORD` in sync with the URI if you run the API on the host.
 
-### Run API + Mongo together
+### Option A — everything in Docker
 
 ```bash
 docker compose up --build
 ```
 
-API: `http://localhost:8080`  
-Mongo: `localhost:27017`
+Starts both Mongo and the API. No service name needed.
+
+- API: `http://localhost:8080`
+- Swagger: `http://localhost:8080/swagger`
+- Mongo: `localhost:27017`
 
 Inside the API container, Mongo is reached at hostname `mongo` (Compose overrides `MONGO_URI`). Wait until Mongo is healthy before the API starts.
 
 Stop with `Ctrl+C`, or `docker compose down`.
 
-### Run API on the host (Mongo in Docker only)
+### Option B — API on the host, Mongo in Docker only
 
 ```bash
 docker compose up -d mongo
 go run ./cmd/api
 ```
 
+Name `mongo` on purpose so Compose does not also start the API container (that would fight `go run` for port `8080`).
+
 Uses `MONGO_URI` from `.env` (`127.0.0.1`). Listens on `PORT` (default `8080`).
+
+Swagger: `http://localhost:8080/swagger`  
+Spec: `/swagger/openapi.yaml`
+
+Specs are embedded in the API binary, so the same URLs work for both options.
 
 | Variable | Purpose |
 |---|---|
@@ -242,6 +252,10 @@ Unexpected 500s log the real error with `event: internalError` and `requestId`. 
 
 ```
 cmd/api/                 entrypoint
+docs/swagger/            Swagger UI + OpenAPI, embedded
+docs/postman/            collection and local environment
+docs/lottery-search.md     lottery design (English)
+docs/lottery-search.th.md  lottery design (Thai)
 internal/domain/         ports and domain errors
 internal/service/        use cases
 internal/repository/     Mongo adapters
@@ -249,11 +263,12 @@ internal/http/           Fiber handlers and routes
 internal/middleware/     logging, recover, JWT
 internal/job/            user-count ticker
 pkg/                     JWT, Mongo, config, envelope, shared errors
-docs/postman/            collection and local environment
-docs/lottery-search.md     lottery design (English)
-docs/lottery-search.th.md  lottery design (Thai)
 ```
 
 ## Postman
 
 Import [`docs/postman/Backend_Challenge.postman_collection.json`](docs/postman/Backend_Challenge.postman_collection.json) and [`docs/postman/Backend_Challenge_Local.postman_environment.json`](docs/postman/Backend_Challenge_Local.postman_environment.json). Happy path: Health → Register → Login → `/users` with the saved token. More detail in [`docs/postman/README.md`](docs/postman/README.md).
+
+## Swagger
+
+Open `http://localhost:8080/swagger` after the API starts (local or Compose). Authorize with the JWT from `/auth/login`, then call `/users`.

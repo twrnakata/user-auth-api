@@ -1,5 +1,7 @@
 .git
 .gitignore
 .env
-docs
+docs/postman/
+docs/lottery-search.md
+docs/lottery-search.th.md
 *.md

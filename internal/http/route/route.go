@@ -1,8 +1,10 @@
 package route
 
 import (
+	"net/http"
 	"time"
 
+	apidocs "github.com/twrnakata/user-auth-api/docs/swagger"
 	domainauth "github.com/twrnakata/user-auth-api/internal/domain/auth"
 	domainuser "github.com/twrnakata/user-auth-api/internal/domain/user"
 	"github.com/twrnakata/user-auth-api/internal/http/handler"
@@ -10,6 +12,7 @@ import (
 	jwtpkg "github.com/twrnakata/user-auth-api/pkg/jwt"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/filesystem"
 )
 
 type Route interface {
@@ -66,6 +69,11 @@ func NewApp(registerService domainauth.RegisterUserService, loginService domaina
 	})
 	newRoute := NewRoute(registerService, loginService, listUserService, getUserService, updateUserService, deleteUserService, jwtService)
 	newRoute.InitRoute(application)
+	application.Use("/swagger", filesystem.New(filesystem.Config{
+		Root:   http.FS(apidocs.Files),
+		Index:  "index.html",
+		MaxAge: 0,
+	}))
 	return application
 }
 

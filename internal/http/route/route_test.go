@@ -210,3 +210,35 @@ func TestNewApp_SetsReadTimeout(t *testing.T) {
 
 	require.Equal(t, fiberReadTimeout, application.Config().ReadTimeout)
 }
+
+func TestNewApp_ServesSwagger(t *testing.T) {
+	jwtService, err := jwtpkg.NewJWTService("test-secret", jwtpkg.DefaultExpireDuration)
+	require.NoError(t, err)
+
+	application := NewApp(
+		&fakeRegisterService{},
+		&fakeLoginService{},
+		&fakeListUserService{},
+		&fakeGetUserService{},
+		&fakeUpdateUserService{},
+		&fakeDeleteUserService{},
+		jwtService,
+	)
+
+	uiRequest := httptest.NewRequest("GET", "/swagger", nil)
+	uiResponse, err := application.Test(uiRequest, -1)
+	require.NoError(t, err)
+	require.Equal(t, fiber.StatusOK, uiResponse.StatusCode)
+
+	for _, path := range []string{"/swagger/openapi.yaml"} {
+		request := httptest.NewRequest("GET", path, nil)
+		response, err := application.Test(request, -1)
+		require.NoError(t, err)
+		require.Equal(t, fiber.StatusOK, response.StatusCode)
+
+		raw, err := io.ReadAll(response.Body)
+		require.NoError(t, err)
+		require.Contains(t, string(raw), "openapi: 3.0.3")
+		require.Contains(t, string(raw), "mint.kitt16@gmail.com")
+	}
+}
